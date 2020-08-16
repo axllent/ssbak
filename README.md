@@ -1,5 +1,8 @@
 # SSBak - asset and database backup tool for SilverStripe
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/axllent/ssbak)](https://goreportcard.com/report/github.com/axllent/ssbak)
+
+
 **SSBak** is a backup & restore tool for SilverStripe websites, backing up the assets and database, based on and largely compatible with [SSPak](https://github.com/silverstripe/sspak). It backups up just the assets and database, not the website code itself.
 
 It was written to address backup/restore size limitations of the original `sspak` utility, and can largely work as a drop-in replacement for `sspak` (see [features](#features) and [limitations](#limitations)). The original `sspak` PHP version has a nasty file size limitation due to undocumented PharData limits (see [1](https://github.com/silverstripe/sspak/issues/53), [2](https://github.com/silverstripe/sspak/issues/29) and [3](https://github.com/silverstripe/sspak/pull/52)). I have personally experienced these issues with `sspak` with archives over 4GB, resulting in partial assets backups with no warnings or errors at the time of backup. 
