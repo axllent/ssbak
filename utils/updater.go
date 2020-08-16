@@ -137,48 +137,15 @@ func GithubUpdate(repo, appName, currentVersion string) (string, error) {
 		return "", err
 	}
 
-	// // open the bz2
-	// f, err := os.OpenFile(outFile, 0, 0)
-	// if err != nil {
-	// 	return "", err
-	// }
-
-	// create a bzip2 reader
-	// br := bzip2.NewReader(f)
-
 	// get the running binary
 	oldExec, err := os.Executable()
 	if err != nil {
 		panic(err)
 	}
 
-	// get src permissions
-	// fi, _ := os.Stat(oldExec)
-	// srcPerms := fi.Mode().Perm()
-
-	// write the file
-	// out, err := os.OpenFile(outFile, os.O_CREATE|os.O_RDWR, srcPerms)
-	// if err != nil {
-	// 	return "", err
-	// }
-
-	// _, err = io.Copy(out, br)
-	// if err != nil {
-	// 	return "", err
-	// }
-
-	// // close immediately else Windows has a fit
-	// f.Close()
-	// out.Close()
-
 	if err = ReplaceFile(oldExec, outFile); err != nil {
 		return "", err
 	}
-
-	// // remove the src file
-	// if err := os.Remove(bz2File); err != nil {
-	// 	return "", err
-	// }
 
 	return ver, nil
 }
