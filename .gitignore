@@ -1,0 +1,10 @@
+.env
+_ss_environment.php
+assets/
+dist/
+public/
+ssbak
+*.gz
+*.tar
+*.sspak
+*.sql
