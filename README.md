@@ -19,7 +19,7 @@ It was written to address backup/restore size limitations of the original `sspak
 
 ## Installation & requirements
 
-- ~~Download a suitable binary for your architecture (see [releases](https://github.com/axllent/ssbak/releases/latest)), make it executable and place it in your $PATH.~~ You can optionally save this as `sspak` to use as a drop-in replacement for `sspak` (see [limitations](#limitations)).
+- Download a suitable binary for your architecture (see [releases](https://github.com/axllent/ssbak/releases/latest)), make it executable and place it in your $PATH. You can optionally save this as `sspak` to use as a drop-in replacement for `sspak` (see [limitations](#limitations)).
 - MySQL and MySQLDump must be installed. SSBak uses these system tools for backing up and restoring database backups.
 
 If you wish to compile SSBak from source you can `go get -u github.com/axllent/sspak` (Go >= 1.11 required).
