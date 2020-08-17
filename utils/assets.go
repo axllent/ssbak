@@ -40,6 +40,8 @@ func AssetsFromTarGz(tmpDir, assetsBase string) error {
 		return fmt.Errorf("File '%s' does not exist", in)
 	}
 
+	app.Log(fmt.Sprintf("Unpacking '%s' to '%s'", in, assetsPath))
+
 	err := targz.Extract(in, assetsBase)
 	if err != nil {
 		return err
