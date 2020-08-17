@@ -1,16 +1,13 @@
 TAG=`git describe --tags`
 VERSION ?= `[ -d ".git" ] && git describe --tags || echo "0.0.0"`
 LDFLAGS=-ldflags "-s -w -X github.com/axllent/ssbak/cmd.Version=${VERSION}"
-UPX := $(shell which upx)
 BINARY="ssbak"
 
 build = echo "\n\nBuilding $(1)-$(2)" && CGO_ENABLED=0 GOOS=$(1) GOARCH=$(2) go build ${LDFLAGS} -o dist/${BINARY}_$(1)_$(2) \
-	&& if [ "${UPX}" != "" ]; then ${UPX} -9 --brute dist/${BINARY}_$(1)_$(2); fi \
 	&& if [ $(1) = "windows" ]; then mv dist/${BINARY}_$(1)_$(2) dist/${BINARY}_$(1)_$(2).exe; fi
 
 build: *.go go.*
 	CGO_ENABLED=0 go build ${LDFLAGS} -o ${BINARY}
-	@if [ "${UPX}" != "" ]; then ${UPX} -9 ${BINARY}; fi
 	rm -rf /tmp/go-*
 
 clean:

@@ -17,8 +17,8 @@ var rootCmd = &cobra.Command{
 	Long:  `SSBak - sspak database/asset backup tool for SilverStripe.`,
 	// 	Example: `  ssbak load . website.sspak # restores a backup
 	//   ssbak save website.sspak   # saves a backup`,
-	SilenceUsage:  true, // supress help screen on error
-	SilenceErrors: true, // supress duplicate error on error
+	SilenceUsage:  true, // suppress help screen on error
+	SilenceErrors: true, // suppress duplicate error on error
 	PersistentPostRun: func(cmd *cobra.Command, args []string) {
 		// delete temporary files after completion
 		app.Cleanup()

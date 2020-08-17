@@ -63,12 +63,16 @@ func fromSsEnvironment(file string) error {
 		return err
 	}
 
-	php := string(phpb)
+	rawPHP := string(phpb)
 
-	DBHost = matchFromPhp(php, "SS_DATABASE_SERVER")
-	DBUsername = matchFromPhp(php, "SS_DATABASE_USERNAME")
-	DBPassword = matchFromPhp(php, "SS_DATABASE_PASSWORD")
-	DBName = matchFromPhp(php, "SS_DATABASE_NAME")
+	// strip out php comments
+	re := regexp.MustCompile("(?s)#.*?\n|(?s)//.*?\n|/\\*.*?\\*/")
+	str := re.ReplaceAllString(rawPHP, "")
+
+	DBHost = matchFromPhp(str, "SS_DATABASE_SERVER")
+	DBUsername = matchFromPhp(str, "SS_DATABASE_USERNAME")
+	DBPassword = matchFromPhp(str, "SS_DATABASE_PASSWORD")
+	DBName = matchFromPhp(str, "SS_DATABASE_NAME")
 
 	return nil
 }
