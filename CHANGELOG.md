@@ -1,5 +1,10 @@
 # Changelog
 
+## [dev]
+
+- Add shell completion generator
+
+
 ## [0.0.2-alpha]
 
 - Remove PHP comments from `_ss_environment.php`

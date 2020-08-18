@@ -19,6 +19,7 @@ It was written to address backup/restore size limitations of the original SSPak 
 - Does not require (or use) PHP (see [limitations](#limitations)).
 - Multiplatform static binaries (Linux, Mac & Windows). The only system requirements are `mysql`(.exe) and `mysqldump`(.exe). All other actions such as tar, gzip etc are handled directly in SSBak.
 - Optional verbose output to see what it is doing.
+- Shell completion (see `ssbak completion -h`)
 
 
 ## Usage
