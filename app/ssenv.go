@@ -11,8 +11,8 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// Env translates a SilverStripe env
-func Env(dir string) error {
+// BoostrapEnv sets up the SilverStripe environment
+func BoostrapEnv(dir string) error {
 	if !isDir(dir) {
 		return fmt.Errorf("%s is not a directory", dir)
 	}
@@ -20,11 +20,11 @@ func Env(dir string) error {
 	ProjectRoot = dir
 
 	if isFile(path.Join(dir, ".env")) {
-		if err := fromEnv(path.Join(dir, ".env")); err != nil {
+		if err := setFromEnvFile(path.Join(dir, ".env")); err != nil {
 			return err
 		}
 	} else if isFile(path.Join(dir, "_ss_environment.php")) {
-		if err := fromSsEnvironment(path.Join(dir, "_ss_environment.php")); err != nil {
+		if err := setFromSsEnvironmentFile(path.Join(dir, "_ss_environment.php")); err != nil {
 			return err
 		}
 	} else {
@@ -43,7 +43,7 @@ func Env(dir string) error {
 }
 
 // Extracts variables from an .env file
-func fromEnv(file string) error {
+func setFromEnvFile(file string) error {
 	if err := godotenv.Load(file); err != nil {
 		return err
 	}
@@ -57,7 +57,7 @@ func fromEnv(file string) error {
 }
 
 // Extracts from a _ss_environment.php file
-func fromSsEnvironment(file string) error {
+func setFromSsEnvironmentFile(file string) error {
 	phpb, err := ioutil.ReadFile(file)
 	if err != nil {
 		return err

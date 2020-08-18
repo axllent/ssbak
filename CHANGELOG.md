@@ -1,8 +1,9 @@
 # Changelog
 
-## [dev]
+## [unreleased]
 
 - Add shell completion generator
+- Rename some core functions
 
 
 ## [0.0.2-alpha]

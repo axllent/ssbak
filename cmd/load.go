@@ -51,7 +51,7 @@ var loadCmd = &cobra.Command{
 		app.AddTempFile(assetsFile)
 
 		if utils.IsFile(gzipSQLFile) && !app.OnlyAssets {
-			if err := app.Env(base); err != nil {
+			if err := app.BoostrapEnv(base); err != nil {
 				return err
 			}
 			dropDatabase, _ := cmd.Flags().GetBool("drop-db")
