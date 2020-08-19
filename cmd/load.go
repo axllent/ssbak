@@ -54,12 +54,15 @@ var loadCmd = &cobra.Command{
 			if err := app.BoostrapEnv(base); err != nil {
 				return err
 			}
+
 			dropDatabase, _ := cmd.Flags().GetBool("drop-db")
-			if err := utils.CreateDatabase(dropDatabase); err != nil {
+			// use map to determine which database function to use
+			if err := utils.DBCreateWrapper[app.DB.Type](dropDatabase); err != nil {
 				return err
 			}
 
-			if err := utils.LoadDatabaseFromGz(gzipSQLFile); err != nil {
+			// use map to determine which database function to use
+			if err := utils.DBLoadWrapper[app.DB.Type](gzipSQLFile); err != nil {
 				return err
 			}
 		}
