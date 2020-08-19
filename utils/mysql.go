@@ -30,13 +30,17 @@ func MySQLDumpToGz(gzipFile string) error {
 		"--compress",
 	}
 
-	args = append(args, "-h", app.DBHost, "-u", app.DBUsername, app.DBName)
+	if app.DB.Port != "" {
+		args = append(args, "-P", app.DB.Port)
+	}
+
+	args = append(args, "-h", app.DB.Host, "-u", app.DB.Username, app.DB.Name)
 
 	cmd := exec.Command(mysqldump, args...)
 
-	if app.DBPassword != "" {
+	if app.DB.Password != "" {
 		// Export MySQL password
-		cmd.Env = append(os.Environ(), "MYSQL_PWD="+app.DBPassword)
+		cmd.Env = append(os.Environ(), "MYSQL_PWD="+app.DB.Password)
 	}
 
 	app.Log(fmt.Sprintf("Dumping database to '%s'", gzipFile))
@@ -88,21 +92,25 @@ func CreateDatabase(dropDatabase bool) error {
 		"--compress",
 	}
 
-	sql := "CREATE DATABASE IF NOT EXISTS `" + app.DBName + "`"
-	if dropDatabase {
-		app.Log(fmt.Sprintf("Dropping database `%s`", app.DBName))
-		sql = "DROP DATABASE IF EXISTS `" + app.DBName + "`; " + sql
+	if app.DB.Port != "" {
+		args = append(args, "-P", app.DB.Port)
 	}
 
-	app.Log(fmt.Sprintf("Creating database (if not exists) `%s`", app.DBName))
+	sql := "CREATE DATABASE IF NOT EXISTS `" + app.DB.Name + "`"
+	if dropDatabase {
+		app.Log(fmt.Sprintf("Dropping database `%s`", app.DB.Name))
+		sql = "DROP DATABASE IF EXISTS `" + app.DB.Name + "`; " + sql
+	}
 
-	args = append(args, "-h", app.DBHost, "-u", app.DBUsername, "-e", sql)
+	app.Log(fmt.Sprintf("Creating database (if not exists) `%s`", app.DB.Name))
+
+	args = append(args, "-h", app.DB.Host, "-u", app.DB.Username, "-e", sql)
 
 	cmd := exec.Command(mysql, args...)
 
-	if app.DBPassword != "" {
+	if app.DB.Password != "" {
 		// Export MySQL password
-		cmd.Env = append(os.Environ(), "MYSQL_PWD="+app.DBPassword)
+		cmd.Env = append(os.Environ(), "MYSQL_PWD="+app.DB.Password)
 	}
 
 	var errbuf bytes.Buffer
@@ -132,13 +140,13 @@ func LoadDatabaseFromGz(gzipSQLFile string) error {
 
 	args := []string{"--default-character-set=utf8"}
 
-	args = append(args, "-h", app.DBHost, "-u", app.DBUsername, app.DBName)
+	args = append(args, "-h", app.DB.Host, "-u", app.DB.Username, app.DB.Name)
 
 	cmd := exec.Command(mysql, args...)
 
-	if app.DBPassword != "" {
+	if app.DB.Password != "" {
 		// Export MySQL password
-		cmd.Env = append(os.Environ(), "MYSQL_PWD="+app.DBPassword)
+		cmd.Env = append(os.Environ(), "MYSQL_PWD="+app.DB.Password)
 	}
 
 	stdin, err := cmd.StdinPipe()
@@ -168,7 +176,7 @@ func LoadDatabaseFromGz(gzipSQLFile string) error {
 		return err
 	}
 
-	app.Log(fmt.Sprintf("Imported '%s' to `%s`", gzipSQLFile, app.DBName))
+	app.Log(fmt.Sprintf("Imported '%s' to `%s`", gzipSQLFile, app.DB.Name))
 
 	return nil
 }

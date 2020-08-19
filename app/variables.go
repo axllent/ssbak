@@ -1,20 +1,11 @@
 package app
 
 var (
+	// DB config
+	DB = DBStruct{}
+
 	// ProjectRoot var
 	ProjectRoot string
-
-	// DBHost database host
-	DBHost string
-
-	// DBUsername database user
-	DBUsername string
-
-	// DBPassword database password
-	DBPassword string
-
-	// DBName database name
-	DBName string
 
 	// Verbose logging
 	Verbose bool
@@ -36,3 +27,21 @@ var (
 	// // IdentityFile SSH key
 	// IdentityFile string
 )
+
+// DBStruct struct
+type DBStruct struct {
+	// Host database host
+	Host string
+
+	// Username database user
+	Username string
+
+	// Password database password
+	Password string
+
+	// Name database name
+	Name string
+
+	// Port database port (as string)
+	Port string
+}

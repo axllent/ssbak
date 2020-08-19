@@ -12,6 +12,7 @@ var completionCmd = &cobra.Command{
 	Short:                 "Generate a completion script for common shells",
 	ValidArgs:             []string{"bash", "zsh", "fish", "powershell"},
 	DisableFlagsInUseLine: true,
+	Hidden:                true,
 	Args:                  cobra.ExactValidArgs(1),
 	Long: `To load completions:
 
