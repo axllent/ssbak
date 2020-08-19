@@ -30,13 +30,15 @@ var saveCmd = &cobra.Command{
 		sspakFiles := []string{}
 
 		if !app.OnlyAssets {
-			sqlFile := path.Join(tmpDir, "database.sql.gz")
-			app.AddTempFile(sqlFile)
+			gzipFile := path.Join(tmpDir, "database.sql.gz")
+			app.AddTempFile(gzipFile)
 
-			if err := utils.MySQLDumpToGz(sqlFile); err != nil {
+			// use map to determine which database function to use
+			if err := utils.DBDumpWrapper[app.DB.Type](gzipFile); err != nil {
 				return err
 			}
-			sspakFiles = append(sspakFiles, sqlFile)
+
+			sspakFiles = append(sspakFiles, gzipFile)
 		}
 
 		if !app.OnlyDB {

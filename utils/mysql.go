@@ -80,8 +80,8 @@ func MySQLDumpToGz(gzipFile string) error {
 	return nil
 }
 
-// CreateDatabase creates a database, optionally dropping it
-func CreateDatabase(dropDatabase bool) error {
+// MySQLCreateDB a database, optionally dropping it
+func MySQLCreateDB(dropDatabase bool) error {
 	mysql, err := Which("mysql")
 	if err != nil {
 		return err
@@ -126,9 +126,9 @@ func CreateDatabase(dropDatabase bool) error {
 	return nil
 }
 
-// LoadDatabaseFromGz loads a GZ database file into the database,
+// MySQLLoadFromGz loads a GZ database file into the database,
 // streaming the gz file to the mysql cli.
-func LoadDatabaseFromGz(gzipSQLFile string) error {
+func MySQLLoadFromGz(gzipSQLFile string) error {
 	mysql, err := Which("mysql")
 	if err != nil {
 		return err
