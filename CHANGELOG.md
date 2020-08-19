@@ -2,8 +2,10 @@
 
 ## [unreleased]
 
-- Add shell completion generator
+- Add shell completion generator (see `ssbak completion -h`)
 - Rename some core functions
+- Support for MySQL port setting
+- Allow exported environment values to override `_ss_environment.php` values
 
 
 ## [0.0.2-alpha]
