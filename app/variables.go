@@ -44,4 +44,7 @@ type DBStruct struct {
 
 	// Port database port (as string)
 	Port string
+
+	// Database type (mysql, postgres etc)
+	Type string
 }

@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
@@ -39,6 +40,13 @@ func BoostrapEnv(dir string) error {
 		return errors.New("No database user defined")
 	}
 
+	// MySQLPDODatabase, MySQLDatabase, MSSQLDatabase, PostgreSQLDatabase
+	if DB.Type == "" || strings.Contains(strings.ToLower(DB.Type), "mysql") {
+		DB.Type = "MySQL"
+	} else {
+		return fmt.Errorf("Database %s not supported", DB.Type)
+	}
+
 	return nil
 }
 
@@ -52,6 +60,7 @@ func setFromEnvFile(file string) error {
 	DB.Username = os.Getenv("SS_DATABASE_USERNAME")
 	DB.Password = os.Getenv("SS_DATABASE_PASSWORD")
 	DB.Name = os.Getenv("SS_DATABASE_NAME")
+	DB.Type = os.Getenv("SS_DATABASE_CLASS")
 
 	if os.Getenv("SS_DATABASE_PORT") != "" {
 		DB.Port = os.Getenv("SS_DATABASE_PORT")
@@ -77,6 +86,7 @@ func setFromSsEnvironmentFile(file string) error {
 	DB.Username = matchFromPhp(str, "SS_DATABASE_USERNAME")
 	DB.Password = matchFromPhp(str, "SS_DATABASE_PASSWORD")
 	DB.Name = matchFromPhp(str, "SS_DATABASE_NAME")
+	DB.Type = matchFromPhp(str, "SS_DATABASE_CLASS")
 
 	if matchFromPhp(str, "SS_DATABASE_PORT") != "" {
 		DB.Port = matchFromPhp(str, "SS_DATABASE_PORT")
