@@ -87,6 +87,10 @@ func setFromSsEnvironmentFile(file string) error {
 
 // MatchFromPhp uses regular expressiont to detect variables in a string
 func matchFromPhp(code, key string) string {
+	// allow exported environment values to override
+	if os.Getenv(key) != "" {
+		return os.Getenv(key)
+	}
 	var re = regexp.MustCompile(`(?mi)define\s*?\(\s*?['"]` + key + `['"]\s*?,\s*?(['"](.*)['"]|(\d+))\s*?\)\s*?;`)
 
 	matches := re.FindStringSubmatch(code)
