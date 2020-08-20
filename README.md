@@ -55,7 +55,7 @@ If you wish to compile SSBak from source you can `go get -u github.com/axllent/s
 
 ### Environment settings
 
-SSBak automatically tries to parse either a `.env` or a `_ss_environment.php` in your webroot to detect the database settings. You can however export (or override) and of the following by exporting them first in your shell:
+SSBak automatically tries to parse either a `.env` or a `_ss_environment.php` in your webroot to detect the database settings. You can however export (or override) any of the following by exporting them first in your shell:
 
 - `SS_DATABASE_SERVER` **(required)**
 - `SS_DATABASE_NAME` **(required)**
@@ -64,7 +64,8 @@ SSBak automatically tries to parse either a `.env` or a `_ss_environment.php` in
 - `SS_DATABASE_PORT`
 - `SS_DATABASE_CLASS` (currently only MySQLPDODatabase & MySQLDatabase supported)
 
-By default SSBak uses your system temporary directory (eg: `/tmp/` on Linux/Mac) to create, merge and extract .sspak files. You can override this path by setting the `TMPDIR` in your command:
+
+By default SSBak uses your system temporary directory (eg: `/tmp/` on Linux/Mac) to save and load the temporary files from your .sspak archive. You can override this path by setting the `TMPDIR` in your command:
 
 ```
 TMPDIR="/drive/with/more/space" ssbak save . website.sspak
