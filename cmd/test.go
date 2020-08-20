@@ -26,6 +26,7 @@ var testCmd = &cobra.Command{
 			return err
 		}
 
+		fmt.Println("Detected database environment variables:")
 		fmt.Println(string(d))
 
 		return nil

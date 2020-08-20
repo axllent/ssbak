@@ -21,11 +21,6 @@ var (
 
 	// OnlyDB runtime variable set with flags
 	OnlyDB bool
-
-	// // DBType database type
-	// DBType string
-	// // IdentityFile SSH key
-	// IdentityFile string
 )
 
 // DBStruct struct
