@@ -29,7 +29,8 @@ func BoostrapEnv(dir string) error {
 			return err
 		}
 	} else {
-		return fmt.Errorf("Cannot find an SilverStripe config in %s", dir)
+		// show warning, but continue as the DB variables could have been exported
+		fmt.Printf("Cannot find an SilverStripe config in %s\n", dir)
 	}
 
 	if DB.Name == "" {
