@@ -19,6 +19,7 @@ It was written to address backup/restore size limitations of the original SSPak 
 - Does not require (or use) PHP (see [limitations](#limitations)).
 - Multiplatform static binaries (Linux, Mac & Windows). The only system requirements are `mysql`(.exe) and `mysqldump`(.exe). All other actions such as tar, gzip etc are handled directly in SSBak.
 - Optional verbose output to see what it is doing.
+- Shell completion (see `ssbak completion -h`)
 
 
 ## Usage
@@ -44,21 +45,31 @@ Use "ssbak [command] --help" for more information about a command.
 ```
 
 
-### Temporary directory
-
-By default SSBak uses your system temporary directory (eg: `/tmp/` on Linux/Mac) to create, merge and extract .sspak files. You can override this path by setting the `TMPDIR` in your command:
-
-```
-TMPDIR="/drive/with/more/space" ssbak save . website.sspak
-```
-
-
 ## Installation & requirements
 
 - Download a suitable binary for your architecture (see [releases](https://github.com/axllent/ssbak/releases/latest)), make it executable and place it in your $PATH. You can optionally save this as SSPak to use as a drop-in replacement for SSPak (see [limitations](#limitations)).
 - MySQL and MySQLDump must be installed. SSBak uses these system tools for backing up and restoring database backups.
 
-If you wish to compile SSBak from source you can `go get -u github.com/axllent/sspak` (Go >= 1.11 required).
+If you wish to compile SSBak from source you can `go get -u github.com/axllent/ssbak` (Go >= 1.11 required).
+
+
+## Environment settings
+
+SSBak automatically tries to parse either a `.env` or a `_ss_environment.php` in your webroot to detect the database settings. You can however export (or override) any of the following by exporting them first in your shell:
+
+- `SS_DATABASE_SERVER` **(required)**
+- `SS_DATABASE_NAME` **(required)**
+- `SS_DATABASE_USERNAME` **(required)**
+- `SS_DATABASE_PASSWORD`
+- `SS_DATABASE_PORT`
+- `SS_DATABASE_CLASS` (currently only mysql supported & defaults to MySQL if unspecified)
+
+
+By default SSBak uses your system temporary directory (eg: `/tmp/` on Linux/Mac) to save and load the temporary files from your .sspak archive. You can override this path by setting the `TMPDIR` in your command:
+
+```
+TMPDIR="/drive/with/more/space" ssbak save . website.sspak
+```
 
 
 ## Limitations
@@ -66,5 +77,5 @@ If you wish to compile SSBak from source you can `go get -u github.com/axllent/s
 SSBak is designed as a database & asset backup & restore tool, and is largely drop-in replacement for the existing SSPak tool. There are however a few limitations:
 
 - SSBak only supports MySQL databases. If there is demand for PostgreSQL then this can be requested and may be added in the future.
-- SSBak is written in Go which does not have any PHP-parsing capabilities. For all database dump & restore operations it requires either a `.env` or a `_ss_environment.php` file containing `SS_DATABASE_SERVER`, `SS_DATABASE_USERNAME`, `SS_DATABASE_PASSWORD` & `SS_DATABASE_NAME` in the **root** of your website folder (default location).
+- SSBak is written in Go which does not have any PHP-parsing capabilities. For all database dump & restore operations it requires either a `.env` or a `_ss_environment.php` file containing `SS_DATABASE_SERVER`, `SS_DATABASE_USERNAME`, `SS_DATABASE_PASSWORD` & `SS_DATABASE_NAME` in the **root** of your website folder (default location). You can however also export the required variables (see [Environment settings](#environment-settings))
 - It does not (yet?) support remote ssh storage, `git-remote` / `install`, or CSV import/export features from SSPak.

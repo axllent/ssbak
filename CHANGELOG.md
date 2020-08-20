@@ -1,8 +1,17 @@
 # Changelog
 
+## [0.0.3-beta]
+
+- Add shell completion generator (see `ssbak completion -h`)
+- Rename some core functions
+- Support for MySQL port setting
+- Allow exported environment values to override `.env` / `_ss_environment.php` values
+- Add DB type / function map, and return errors for non-supported database types
+
+
 ## [0.0.2-alpha]
 
-- Remove PHP comments from `_ss_environment.php`
+- Ignore PHP comments in `_ss_environment.php`
 
 
 ## [0.0.1-alpha]

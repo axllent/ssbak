@@ -17,7 +17,7 @@ var saveCmd = &cobra.Command{
 	Example: `  ssbak save ./ website.sspak`,
 	Args:    cobra.ExactArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if err := app.Env(args[0]); err != nil {
+		if err := app.BoostrapEnv(args[0]); err != nil {
 			return err
 		}
 
@@ -30,13 +30,15 @@ var saveCmd = &cobra.Command{
 		sspakFiles := []string{}
 
 		if !app.OnlyAssets {
-			sqlFile := path.Join(tmpDir, "database.sql.gz")
-			app.AddTempFile(sqlFile)
+			gzipFile := path.Join(tmpDir, "database.sql.gz")
+			app.AddTempFile(gzipFile)
 
-			if err := utils.MySQLDumpToGz(sqlFile); err != nil {
+			// use map to determine which database function to use
+			if err := utils.DBDumpWrapper[app.DB.Type](gzipFile); err != nil {
 				return err
 			}
-			sspakFiles = append(sspakFiles, sqlFile)
+
+			sspakFiles = append(sspakFiles, gzipFile)
 		}
 
 		if !app.OnlyDB {

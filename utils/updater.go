@@ -131,7 +131,6 @@ func GithubUpdate(repo, appName, currentVersion string) (string, error) {
 
 	tmpDir := app.GetTempDir()
 	outFile := filepath.Join(tmpDir, filename)
-	// extractedFile := strings.TrimSuffix(bz2File, ".bz2")
 
 	if err := DownloadToFile(downloadURL, outFile); err != nil {
 		return "", err
