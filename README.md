@@ -77,5 +77,5 @@ TMPDIR="/drive/with/more/space" ssbak save . website.sspak
 SSBak is designed as a database & asset backup & restore tool, and is largely drop-in replacement for the existing SSPak tool. There are however a few limitations:
 
 - SSBak only supports MySQL databases. If there is demand for PostgreSQL then this can be requested and may be added in the future.
-- SSBak is written in Go which does not have any PHP-parsing capabilities. For all database dump & restore operations it requires either a `.env` or a `_ss_environment.php` file containing `SS_DATABASE_SERVER`, `SS_DATABASE_USERNAME`, `SS_DATABASE_PASSWORD` & `SS_DATABASE_NAME` in the **root** of your website folder (default location).
+- SSBak is written in Go which does not have any PHP-parsing capabilities. For all database dump & restore operations it requires either a `.env` or a `_ss_environment.php` file containing `SS_DATABASE_SERVER`, `SS_DATABASE_USERNAME`, `SS_DATABASE_PASSWORD` & `SS_DATABASE_NAME` in the **root** of your website folder (default location). You can however also export the required variables (see [Environment settings](#environment-settings))
 - It does not (yet?) support remote ssh storage, `git-remote` / `install`, or CSV import/export features from SSPak.
