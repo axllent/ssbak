@@ -70,7 +70,6 @@ func mkdirAll(dirPath string, perm os.FileMode) (func(), error) {
 
 	for p := dirPath; ; p = path.Dir(p) {
 		finfo, err := os.Stat(p)
-
 		if err == nil {
 			if finfo.IsDir() {
 				break
@@ -316,10 +315,9 @@ func extract(filePath string, directory string) error {
 			return err
 		}
 
-		// set file permissions
-		if err := os.Chmod(filename, fileInfo.Mode().Perm()); err != nil {
-			return err
-		}
+		// Set file permissions & timestamps
+		os.Chmod(filename, os.FileMode(header.Mode))
+		os.Chtimes(filename, header.AccessTime, header.ModTime)
 	}
 
 	return nil

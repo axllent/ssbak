@@ -2,7 +2,7 @@
 
 ## [develop]
 
-- Retain file permissions on save/load
+- Restore file permissions & modification times on load
 - Add `--ignore-resampled` option to save or restore without resampled images.
 
 
