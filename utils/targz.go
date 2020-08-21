@@ -12,7 +12,15 @@ import (
 	"path"
 	"path/filepath"
 	"syscall"
+
+	"github.com/axllent/ssbak/app"
 )
+
+// DirInfo struct for holding directory information for post-extraction manipulation
+type DirInfo struct {
+	Path   string
+	Header *tar.Header
+}
 
 // TarGZCompress creates a archive from the folder inputFilePath points to in the file outputFilePath points to.
 // Only adds the last directory in inputFilePath to the archive, not the whole path.
@@ -175,6 +183,41 @@ func compress(inPath, outFilePath, subPath string) (err error) {
 
 // Read a directy and write it to the tar writer. Recursive function that writes all sub folders.
 func writeDirectory(directory string, tarWriter *tar.Writer, subPath string) error {
+	base, err := os.Stat(directory)
+	if err != nil {
+		return err
+	}
+
+	if base.IsDir() {
+		// Add the directory header to tar so we can restore permissions etc
+		// calculate the relative path for tar
+		evaledPath, err := filepath.EvalSymlinks(directory)
+		if err != nil {
+			return err
+		}
+		subPath, err := filepath.EvalSymlinks(subPath)
+		if err != nil {
+			return err
+		}
+
+		// relative path
+		relativeDirName := evaledPath[len(subPath):]
+
+		// inherit directory permissions
+		header, err := tar.FileInfoHeader(base, base.Name())
+		if err != nil {
+			return err
+		}
+
+		// set relative directory path
+		header.Name = relativeDirName
+
+		// write directory header
+		if err := tarWriter.WriteHeader(header); err != nil {
+			return err
+		}
+	}
+
 	files, err := ioutil.ReadDir(directory)
 	if err != nil {
 		return err
@@ -183,8 +226,8 @@ func writeDirectory(directory string, tarWriter *tar.Writer, subPath string) err
 	for _, file := range files {
 		currentPath := filepath.Join(directory, file.Name())
 		if file.IsDir() {
-			err := writeDirectory(currentPath, tarWriter, subPath)
-			if err != nil {
+			// process contents of directory
+			if err := writeDirectory(currentPath, tarWriter, subPath); err != nil {
 				return err
 			}
 		} else {
@@ -260,6 +303,8 @@ func extract(filePath string, directory string) error {
 
 	tarReader := tar.NewReader(gzipReader)
 
+	postDirTimes := []DirInfo{}
+
 	for {
 		header, err := tarReader.Next()
 		if err == io.EOF {
@@ -277,9 +322,25 @@ func extract(filePath string, directory string) error {
 			continue
 		}
 
-		err = os.MkdirAll(dir, 0775)
-		if err != nil {
-			return err
+		if fileInfo.IsDir() {
+			err = os.MkdirAll(filename, 0777)
+			if err != nil {
+				return err
+			}
+
+			// keep original permissions
+			// pointless setting Chtimes() as files are extracted after the directory is created
+			os.Chmod(filename, os.FileMode(header.Mode))
+			// add directory into to slice to process timestamps afterwards
+			postDirTimes = append(postDirTimes, DirInfo{filename, header})
+			continue
+		}
+		// make sure parent directory exists
+		if !fileInfo.IsDir() && !IsDir(dir) {
+			err = os.MkdirAll(dir, 0775)
+			if err != nil {
+				return err
+			}
 		}
 
 		file, err := os.Create(filename)
@@ -318,6 +379,15 @@ func extract(filePath string, directory string) error {
 		// Set file permissions & timestamps
 		os.Chmod(filename, os.FileMode(header.Mode))
 		os.Chtimes(filename, header.AccessTime, header.ModTime)
+	}
+
+	// update directory timestamps post-extraction
+	if len(postDirTimes) > 0 {
+		app.Log(fmt.Sprintf("Setting timestamps for %d extracted directories", len(postDirTimes)))
+
+		for _, dir := range postDirTimes {
+			os.Chtimes(dir.Path, dir.Header.AccessTime, dir.Header.ModTime)
+		}
 	}
 
 	return nil

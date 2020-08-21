@@ -2,7 +2,8 @@
 
 ## [develop]
 
-- Restore file permissions & modification times on load
+- Save file & directory permissions & modification timestamps
+- Restore file & directory permissions & modification timestamps
 - Add `--ignore-resampled` option to save or restore without resampled images.
 
 
