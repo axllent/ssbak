@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 
 	"github.com/axllent/ssbak/app"
-	"github.com/walle/targz"
 )
 
 // AssetsToTarGz creates a tar.gz from the assets folder
@@ -16,7 +15,7 @@ func AssetsToTarGz(assetsDir, gzipFile string) error {
 	size, _ := DirSize(assetsDir)
 	app.Log(fmt.Sprintf("Compressing '%s' (%s) to '%s'", assetsDir, size, gzipFile))
 
-	err := targz.Compress(assetsDir, gzipFile)
+	err := TarGZCompress(assetsDir, gzipFile)
 
 	outSize, _ := DirSize(gzipFile)
 	app.Log(fmt.Sprintf("Compressed '%s' (%s)", gzipFile, outSize))
@@ -42,7 +41,7 @@ func AssetsFromTarGz(tmpDir, assetsBase string) error {
 
 	app.Log(fmt.Sprintf("Unpacking '%s' to '%s'", in, assetsPath))
 
-	err := targz.Extract(in, assetsBase)
+	err := TarGZExtract(in, assetsBase)
 	if err != nil {
 		return err
 	}

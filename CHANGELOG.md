@@ -1,5 +1,10 @@
 # Changelog
 
+## [develop]
+
+- Retain file permissions on save/load
+
+
 ## [0.0.3-beta]
 
 - Add shell completion generator (see `ssbak completion -h`)
