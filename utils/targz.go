@@ -222,6 +222,10 @@ func writeTarGz(path string, tarWriter *tar.Writer, fileInfo os.FileInfo, subPat
 		link = evaledPath
 	}
 
+	if skipResampled(path) {
+		return nil
+	}
+
 	header, err := tar.FileInfoHeader(fileInfo, link)
 	if err != nil {
 		return err
@@ -269,6 +273,10 @@ func extract(filePath string, directory string) error {
 		fileInfo := header.FileInfo()
 		dir := filepath.Join(directory, filepath.Dir(header.Name))
 		filename := filepath.Join(dir, fileInfo.Name())
+
+		if skipResampled(filename) {
+			continue
+		}
 
 		err = os.MkdirAll(dir, 0775)
 		if err != nil {

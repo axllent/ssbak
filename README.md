@@ -16,6 +16,7 @@ It was written to address backup/restore size limitations of the original SSPak 
 
 - Completely compatible with the default .sspak file format (tar non-executable files).
 - Create and restore database and/or assets from a SilverStripe website regardless of asset / database size.
+- Create or restore without resampled images (`--ignore-resampled`). Note: this skips most common image manipulations except for ResizedImages which are usually generated for HTMLText and cannot be regenerated "on the fly". Experimental.
 - Does not require (or use) PHP (see [limitations](#limitations)).
 - Multiplatform static binaries (Linux, Mac & Windows). The only system requirements are `mysql`(.exe) and `mysqldump`(.exe). All other actions such as tar, gzip etc are handled directly in SSBak.
 - Optional verbose output to see what it is doing.

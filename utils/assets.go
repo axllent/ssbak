@@ -15,6 +15,10 @@ func AssetsToTarGz(assetsDir, gzipFile string) error {
 	size, _ := DirSize(assetsDir)
 	app.Log(fmt.Sprintf("Compressing '%s' (%s) to '%s'", assetsDir, size, gzipFile))
 
+	if app.IgnoreResampled {
+		app.Log("Ignoring resampled images")
+	}
+
 	err := TarGZCompress(assetsDir, gzipFile)
 
 	outSize, _ := DirSize(gzipFile)
@@ -40,6 +44,10 @@ func AssetsFromTarGz(tmpDir, assetsBase string) error {
 	}
 
 	app.Log(fmt.Sprintf("Unpacking '%s' to '%s'", in, assetsPath))
+
+	if app.IgnoreResampled {
+		app.Log("Ignoring resampled images")
+	}
 
 	err := TarGZExtract(in, assetsBase)
 	if err != nil {

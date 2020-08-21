@@ -90,5 +90,8 @@ func init() {
 		BoolVarP(&app.OnlyAssets, "assets", "", false, "only restore the assets")
 
 	loadCmd.Flags().
+		BoolVarP(&app.IgnoreResampled, "ignore-resampled", "", false, "ignore most resampled images (experimental)")
+
+	loadCmd.Flags().
 		BoolVarP(&app.Verbose, "verbose", "v", false, "verbose output")
 }
