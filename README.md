@@ -49,7 +49,7 @@ Use "ssbak [command] --help" for more information about a command.
 ## Installation & requirements
 
 - Download a suitable binary for your architecture (see [releases](https://github.com/axllent/ssbak/releases/latest)), make it executable and place it in your $PATH. You can optionally save this as SSPak to use as a drop-in replacement for SSPak (see [limitations](#limitations)).
-- MySQL and MySQLDump must be installed. SSBak uses these system tools for backing up and restoring database backups.
+- MySQL and MySQLDump must be installed and in your $PATH. SSBak uses these system tools for backing up and restoring database backups.
 
 If you wish to compile SSBak from source you can `go get -u github.com/axllent/ssbak` (Go >= 1.11 required).
 
@@ -63,7 +63,7 @@ SSBak automatically tries to parse either a `.env` or a `_ss_environment.php` in
 - `SS_DATABASE_USERNAME` **(required)**
 - `SS_DATABASE_PASSWORD`
 - `SS_DATABASE_PORT`
-- `SS_DATABASE_CLASS` (currently only mysql supported & defaults to MySQL if unspecified)
+- `SS_DATABASE_CLASS` (currently only MySQL supported & defaults to MySQL if unspecified)
 
 
 By default SSBak uses your system temporary directory (eg: `/tmp/` on Linux/Mac) to save and load the temporary files from your .sspak archive. You can override this path by setting the `TMPDIR` in your command:
