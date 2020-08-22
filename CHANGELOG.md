@@ -2,8 +2,8 @@
 
 ## [develop]
 
-- Save file & directory permissions & modification timestamps
-- Restore file & directory permissions & modification timestamps
+permitted- Save file & directory permissions, timestamps, uid & gid
+- Restore file & directory permissions, timestamps, uid & gid (if permitted)
 - Add `--ignore-resampled` option to save or restore without resampled images.
 
 

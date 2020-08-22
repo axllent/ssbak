@@ -328,9 +328,11 @@ func extract(filePath string, directory string) error {
 				return err
 			}
 
-			// keep original permissions
-			// pointless setting Chtimes() as files are extracted after the directory is created
+			// set file permissions & uid/gid
+			// Chtimes() set after once extraction is complete
 			os.Chmod(filename, os.FileMode(header.Mode))
+			os.Chown(filename, header.Uid, header.Gid)
+
 			// add directory into to slice to process timestamps afterwards
 			postDirTimes = append(postDirTimes, DirInfo{filename, header})
 			continue
@@ -376,13 +378,15 @@ func extract(filePath string, directory string) error {
 			return err
 		}
 
-		// Set file permissions & timestamps
+		// set file permissions, timestamps & uid/gid
 		os.Chmod(filename, os.FileMode(header.Mode))
 		os.Chtimes(filename, header.AccessTime, header.ModTime)
+		os.Chown(filename, header.Uid, header.Gid)
 	}
 
-	// update directory timestamps post-extraction
 	if len(postDirTimes) > 0 {
+		// update directory timestamps once extraction is complete, else timestamps
+		// are overwritten as files get added
 		app.Log(fmt.Sprintf("Setting timestamps for %d extracted directories", len(postDirTimes)))
 
 		for _, dir := range postDirTimes {
