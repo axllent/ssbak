@@ -69,7 +69,7 @@ func init() {
 	go func() {
 		<-sigs
 		if err := app.Cleanup(); err != nil {
-			fmt.Sprintf("Error: %v\n", err)
+			fmt.Printf("Error: %v\n", err)
 		}
 		os.Exit(0)
 	}()
