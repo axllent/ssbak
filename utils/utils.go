@@ -114,3 +114,18 @@ func Which(binName string) (string, error) {
 
 	return exec.LookPath(binName)
 }
+
+// SkipResampled detects whether the assets is a resampled image
+func skipResampled(filePath string) bool {
+	if !app.IgnoreResampled {
+		return false
+	}
+
+	for _, r := range app.ResampledRegex {
+		if r.MatchString(filePath) {
+			return true
+		}
+	}
+
+	return false
+}

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.4-beta]
+
+- Save file & directory permissions, timestamps, uid & gid
+- Restore file & directory permissions, timestamps, uid & gid (if permitted)
+- Add `--ignore-resampled` option to save or restore without resampled images.
+
+
 ## [0.0.3-beta]
 
 - Add shell completion generator (see `ssbak completion -h`)

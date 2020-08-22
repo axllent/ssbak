@@ -32,7 +32,6 @@ func Execute() {
 	if altTmpDir != "" {
 		app.Log(fmt.Sprintf("Alternate tmp directory detected '%s'", altTmpDir))
 
-		// os.Exit(0)
 		app.TempDir = altTmpDir
 	}
 
@@ -43,14 +42,15 @@ func Execute() {
 		app.Cleanup()
 
 		// detect if subcommand is valid
-		help := "See: `ssbak -h` for help"
+		help := "\nSee: `ssbak -h` for help"
 		if len(os.Args) > 0 {
 			for _, t := range rootCmd.Commands() {
 				if t.Name() == os.Args[1] {
-					help = "See: ssbak " + os.Args[1] + " -h` for help"
+					help = "\nSee: `ssbak " + os.Args[1] + " -h` for help"
 				}
 			}
 		}
+
 		fmt.Println(help)
 
 		os.Exit(1)

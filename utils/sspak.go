@@ -24,7 +24,7 @@ func ExtractSSPak(sspakFile, outDir string) error {
 		return err
 	}
 
-	app.Log(fmt.Sprintf("Extracting SSPak archive '%s'", sspakFile))
+	app.Log(fmt.Sprintf("Opening SSPak archive '%s'", sspakFile))
 
 	tr := tar.NewReader(r)
 
