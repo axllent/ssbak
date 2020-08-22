@@ -16,12 +16,6 @@ import (
 	"github.com/axllent/ssbak/app"
 )
 
-// DirInfo struct for holding directory information for post-extraction manipulation
-type DirInfo struct {
-	Path   string
-	Header *tar.Header
-}
-
 // TarGZCompress creates a archive from the folder inputFilePath points to in the file outputFilePath points to.
 // Only adds the last directory in inputFilePath to the archive, not the whole path.
 // It tries to create the directory structure outputFilePath contains if it doesn't exist.
@@ -303,7 +297,14 @@ func extract(filePath string, directory string) error {
 
 	tarReader := tar.NewReader(gzipReader)
 
-	postDirTimes := []DirInfo{}
+	// Post extraction directory permissions & timestamps
+	type DirInfo struct {
+		Path   string
+		Header *tar.Header
+	}
+
+	// slice to add all extracted directory info for post-processing
+	postExtraction := []DirInfo{}
 
 	for {
 		header, err := tarReader.Next()
@@ -323,21 +324,22 @@ func extract(filePath string, directory string) error {
 		}
 
 		if fileInfo.IsDir() {
-			err = os.MkdirAll(filename, 0777)
+			// create the directory 755 in case writing permissions prohibit writing before files added
+			err = os.MkdirAll(filename, 755)
 			if err != nil {
 				return err
 			}
 
-			// set file permissions & uid/gid
-			// Chtimes() set after once extraction is complete
-			os.Chmod(filename, os.FileMode(header.Mode))
+			// set file ownership (if alowed)
+			// Chtimes() && Chmod() only set after once extraction is complete
 			os.Chown(filename, header.Uid, header.Gid)
 
-			// add directory into to slice to process timestamps afterwards
-			postDirTimes = append(postDirTimes, DirInfo{filename, header})
+			// add directory info to slice to process afterwards
+			postExtraction = append(postExtraction, DirInfo{filename, header})
 			continue
 		}
-		// make sure parent directory exists
+
+		// make sure parent directory exists (may not be included in tar)
 		if !fileInfo.IsDir() && !IsDir(dir) {
 			err = os.MkdirAll(dir, 0775)
 			if err != nil {
@@ -384,13 +386,13 @@ func extract(filePath string, directory string) error {
 		os.Chown(filename, header.Uid, header.Gid)
 	}
 
-	if len(postDirTimes) > 0 {
-		// update directory timestamps once extraction is complete, else timestamps
-		// are overwritten as files get added
-		app.Log(fmt.Sprintf("Setting timestamps for %d extracted directories", len(postDirTimes)))
+	if len(postExtraction) > 0 {
+		// update directory timestamps & permissions once extraction is complete
+		app.Log(fmt.Sprintf("Setting timestamps for %d extracted directories", len(postExtraction)))
 
-		for _, dir := range postDirTimes {
+		for _, dir := range postExtraction {
 			os.Chtimes(dir.Path, dir.Header.AccessTime, dir.Header.ModTime)
+			os.Chmod(dir.Path, dir.Header.FileInfo().Mode().Perm())
 		}
 	}
 
