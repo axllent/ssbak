@@ -1,5 +1,11 @@
 # Changelog
 
+## [development]
+
+- Update directory permissions after extraction completes
+- Return errors if Cleanup() fails
+
+
 ## [0.0.4-beta]
 
 - Save file & directory permissions, timestamps, uid & gid
