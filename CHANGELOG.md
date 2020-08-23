@@ -1,9 +1,10 @@
 # Changelog
 
-## [development]
+## [0.0.5-beta]
 
 - Update directory permissions after extraction completes
 - Return errors if Cleanup() fails
+- Alias `--ignore-resampled` with `-i`
 
 
 ## [0.0.4-beta]
