@@ -32,14 +32,20 @@ func AddTempFile(file string) {
 }
 
 // Cleanup removes temporary files & directories on exit
-func Cleanup() {
+func Cleanup() error {
 	for _, file := range TempFiles {
 		if isFile(file) {
-			os.Remove(file)
+			if err := os.Remove(file); err != nil {
+				return err
+			}
 		} else if isDir(file) {
-			os.RemoveAll(file)
+			if err := os.RemoveAll(file); err != nil {
+				return err
+			}
 		}
 	}
+
+	return nil
 }
 
 // Log will print out data in verbose output

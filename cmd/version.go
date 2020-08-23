@@ -38,7 +38,7 @@ var versionCmd = &cobra.Command{
 		fmt.Printf("Version: %s\n", Version)
 		latest, _, _, err := utils.GithubLatest(Repo, RepoBinaryName)
 		if err == nil && utils.GreaterThan(latest, Version) {
-			fmt.Printf("Update available: %s\nRun `%s version --update to update (requires read/write access to installed directory).\n", latest, os.Args[0])
+			fmt.Printf("Update available: %s\nRun `%s version --update` to update (requires read/write access to install directory).\n", latest, os.Args[0])
 		}
 
 		return nil
@@ -49,14 +49,7 @@ func init() {
 	rootCmd.AddCommand(versionCmd)
 
 	versionCmd.Flags().
-		BoolP("update", "", false, "update to latest version")
-}
-
-func displayVersion() {
-	latest, _, _, err := utils.GithubLatest(Repo, RepoBinaryName)
-	if err == nil && utils.GreaterThan(latest, Version) {
-		fmt.Printf("Update available: %s\nRun `%s -u` to update.\n", latest, os.Args[0])
-	}
+		BoolP("update", "u", false, "update to latest version")
 }
 
 func updateApp() error {

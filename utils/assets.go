@@ -22,7 +22,7 @@ func AssetsToTarGz(assetsDir, gzipFile string) error {
 	err := TarGZCompress(assetsDir, gzipFile)
 
 	outSize, _ := DirSize(gzipFile)
-	app.Log(fmt.Sprintf("Compressed '%s' (%s)", gzipFile, outSize))
+	app.Log(fmt.Sprintf("Wrote '%s' (%s)", gzipFile, outSize))
 
 	return err
 }

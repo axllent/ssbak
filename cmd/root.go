@@ -19,9 +19,9 @@ var rootCmd = &cobra.Command{
 	//   ssbak save website.sspak   # saves a backup`,
 	SilenceUsage:  true, // suppress help screen on error
 	SilenceErrors: true, // suppress duplicate error on error
-	PersistentPostRun: func(cmd *cobra.Command, args []string) {
+	PersistentPostRunE: func(cmd *cobra.Command, args []string) error {
 		// delete temporary files after completion
-		app.Cleanup()
+		return app.Cleanup()
 	},
 }
 
@@ -38,7 +38,8 @@ func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Printf("Error: %v\n", err)
 
-		// Clean up temporary files on error
+		// Clean up temporary files on error, don't print any cleanup errors
+		// as they would have already been returned above
 		app.Cleanup()
 
 		// detect if subcommand is valid
@@ -67,7 +68,9 @@ func init() {
 		syscall.SIGQUIT)
 	go func() {
 		<-sigs
-		app.Cleanup()
+		if err := app.Cleanup(); err != nil {
+			fmt.Printf("Error: %v\n", err)
+		}
 		os.Exit(0)
 	}()
 }

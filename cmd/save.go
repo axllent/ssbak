@@ -75,7 +75,7 @@ func init() {
 		BoolVarP(&app.OnlyAssets, "assets", "", false, "only save the assets")
 
 	saveCmd.Flags().
-		BoolVarP(&app.IgnoreResampled, "ignore-resampled", "", false, "ignore most resampled images (experimental)")
+		BoolVarP(&app.IgnoreResampled, "ignore-resampled", "i", false, "ignore most resampled images (experimental)")
 
 	saveCmd.Flags().
 		BoolVarP(&app.Verbose, "verbose", "v", false, "verbose output")
