@@ -31,10 +31,10 @@ var (
 	// resized images as those tend to be linked from HTMLText and aren't auto-generated without a republish
 	ResampledRegex = []*regexp.Regexp{
 		// SilverStripe 4
-		regexp.MustCompile(`(?i)\_\_(Fit|Fill|Scale|Resampled)([a-z0-9]+)\.(jpg|png|jpeg)$`),
+		regexp.MustCompile(`(?i)\_\_(Fit|Fill|Scale|Resampled)([a-z0-9]+)\.(jpg|png|jpeg|tiff)$`),
 
 		// SilverStripe 3
-		regexp.MustCompile(`(?i)\/\_resampled\/(Pad|CMSThumbnail|stripthumbnail|Cropped|Set|Fit|Fill|Scale|Resampled).*`),
+		regexp.MustCompile(`(?i)\/\_resampled\/(Pad|CMSThumbnail|stripthumbnail|Cropped|Set|Fit|Fill|Scale|Resampled).*\.(jpg|png|jpeg|tiff)`),
 	}
 )
 
