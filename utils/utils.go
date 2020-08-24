@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"syscall"
 
 	"github.com/axllent/ssbak/app"
 )
@@ -43,8 +44,8 @@ func MkDirIfNotExists(path string) error {
 	return nil
 }
 
-// DirSize returns the size of a directory
-func DirSize(path string) (string, error) {
+// CalcSize returns the size of a directory or file
+func CalcSize(path string) (int64, error) {
 	var size int64
 	err := filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -55,7 +56,36 @@ func DirSize(path string) (string, error) {
 		}
 		return err
 	})
-	return ByteToHr(size), err
+	return size, err
+}
+
+// Convert an int64 to uint64
+func int64Touint64(val int64) uint64 {
+	return uint64(val)
+}
+
+// HasEnoughSpace will return an error message if the provided path does not
+// have sufficient storage space
+func HasEnoughSpace(path string, requiredSize int64) error {
+	if runtime.GOOS == "windows" {
+		// we don't check on Windows
+		return nil
+	}
+
+	var stat syscall.Statfs_t
+
+	syscall.Statfs(path, &stat)
+
+	// Available blocks * size per block = available space in bytes
+	remainingBytes := stat.Bavail * uint64(stat.Bsize)
+
+	storageExpected := uint64(requiredSize)
+
+	if storageExpected > remainingBytes {
+		return fmt.Errorf("%s does not have enough space available (+-%s required)", path, ByteToHr(requiredSize))
+	}
+
+	return nil
 }
 
 // ByteToHr returns a human readable size as a string
@@ -93,13 +123,13 @@ func GzipFile(file, output string) error {
 	gz := gzip.NewWriter(buf)
 	defer gz.Close()
 
-	inSize, _ := DirSize(file)
-	app.Log(fmt.Sprintf("Compressing '%s' (%s) to '%s'", file, inSize, output))
+	inSize, _ := CalcSize(file)
+	app.Log(fmt.Sprintf("Compressing '%s' (%s) to '%s'", file, ByteToHr(inSize), output))
 
 	_, err = io.Copy(gz, src)
 
-	outSize, _ := DirSize(output)
-	app.Log(fmt.Sprintf("Wrote '%s' (%s)", output, outSize))
+	outSize, _ := CalcSize(output)
+	app.Log(fmt.Sprintf("Wrote '%s' (%s)", output, ByteToHr(outSize)))
 
 	return err
 }

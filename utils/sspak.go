@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path"
 	"path/filepath"
 
 	"github.com/axllent/ssbak/app"
@@ -21,6 +22,13 @@ func ExtractSSPak(sspakFile, outDir string) error {
 	defer r.Close()
 
 	if err := MkDirIfNotExists(outDir); err != nil {
+		return err
+	}
+
+	inSize, _ := CalcSize(sspakFile)
+
+	// Test tmp directory has sufficient space.
+	if err := HasEnoughSpace(outDir, inSize); err != nil {
 		return err
 	}
 
@@ -75,8 +83,8 @@ func ExtractSSPak(sspakFile, outDir string) error {
 			// to wait until all operations have completed.
 			f.Close()
 
-			outSize, _ := DirSize(target)
-			app.Log(fmt.Sprintf("Extracted '%s' (%s)", target, outSize))
+			outSize, _ := CalcSize(target)
+			app.Log(fmt.Sprintf("Extracted '%s' (%s)", target, ByteToHr(outSize)))
 		}
 	}
 
@@ -91,6 +99,22 @@ func CreateSSPak(sspakFile string, files []string) error {
 	}
 
 	app.Log(fmt.Sprintf("Creating SSPak archive `%s`", sspakFile))
+
+	outDir := path.Dir(sspakFile)
+	var inSize int64
+	for _, f := range files {
+		size, err := CalcSize(f)
+		if err != nil {
+			return err
+		}
+		inSize = inSize + size
+	}
+
+	// Test output directory has sufficient space.
+	if err := HasEnoughSpace(outDir, inSize); err != nil {
+		return err
+	}
+
 	file, err := os.Create(sspakFile)
 	if err != nil {
 		return fmt.Errorf("Could not create '%s': %s", sspakFile, err.Error())
@@ -106,8 +130,8 @@ func CreateSSPak(sspakFile string, files []string) error {
 		}
 	}
 
-	outSize, _ := DirSize(sspakFile)
-	app.Log(fmt.Sprintf("Wrote '%s' (%s)", sspakFile, outSize))
+	outSize, _ := CalcSize(sspakFile)
+	app.Log(fmt.Sprintf("Wrote '%s' (%s)", sspakFile, ByteToHr(outSize)))
 
 	return nil
 }

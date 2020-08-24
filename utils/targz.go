@@ -126,9 +126,9 @@ func makeAbsolute(inputFilePath, outputFilePath string) (string, string, error) 
 	return inputFilePath, outputFilePath, err
 }
 
-// The main interaction with tar and gzip. Creates a archive and recursivly adds all files in the directory.
+// The main interaction with tar and gzip. Creates a archive and recursively adds all files in the directory.
 // The finished archive contains just the directory added, not any parents.
-// This is possible by giving the whole path exept the final directory in subPath.
+// This is possible by giving the whole path except the final directory in subPath.
 func compress(inPath, outFilePath, subPath string) (err error) {
 	files, err := ioutil.ReadDir(inPath)
 	if err != nil {
@@ -175,7 +175,7 @@ func compress(inPath, outFilePath, subPath string) (err error) {
 	return nil
 }
 
-// Read a directy and write it to the tar writer. Recursive function that writes all sub folders.
+// Read a directory and write it to the tar writer. Recursive function that writes all sub folders.
 func writeDirectory(directory string, tarWriter *tar.Writer, subPath string) error {
 	base, err := os.Stat(directory)
 	if err != nil {
@@ -330,7 +330,7 @@ func extract(filePath string, directory string) error {
 				return err
 			}
 
-			// set file ownership (if alowed)
+			// set file ownership (if allowed)
 			// Chtimes() && Chmod() only set after once extraction is complete
 			os.Chown(filename, header.Uid, header.Gid)
 

@@ -74,8 +74,8 @@ func MySQLDumpToGz(gzipFile string) error {
 		return errors.New(errbuf.String())
 	}
 
-	outSize, _ := DirSize(gzipFile)
-	app.Log(fmt.Sprintf("Wrote %s (%s)", gzipFile, outSize))
+	outSize, _ := CalcSize(gzipFile)
+	app.Log(fmt.Sprintf("Wrote %s (%s)", gzipFile, ByteToHr(outSize)))
 
 	return nil
 }
