@@ -1,5 +1,10 @@
 # Changelog
 
+## [development]
+
+- Add drive checks to ensure enough space for sspak creation / extraction
+
+
 ## [0.0.5-beta]
 
 - Update directory permissions after extraction completes

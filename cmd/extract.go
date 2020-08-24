@@ -28,7 +28,9 @@ var extractCmd = &cobra.Command{
 			return err
 		}
 
-		utils.ExtractSSPak(args[0], outputDir)
+		if err := utils.ExtractSSPak(args[0], outputDir); err != nil {
+			return err
+		}
 
 		return nil
 	},
