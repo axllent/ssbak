@@ -19,6 +19,7 @@ It was written to address backup/restore size limitations of the original SSPak 
 - Optionally create or restore without resampled images (`--ignore-resampled`). Note: this skips most common image manipulations except for ResizedImages which are usually generated for HTMLText and cannot be regenerated "on the fly". Experimental.
 - SSBak does not use PHP at all (see [limitations](#limitations)).
 - Multiplatform static binaries (Linux, Mac & Windows). The only system requirements are `mysql`(.exe) and `mysqldump`(.exe). All other actions such as tar, gzip etc are handled directly in SSBak.
+- Checks temporary and output drives have sufficient space before doing operations (Linux / Mac only)
 - Optional verbose output to see what it is doing.
 - Shell completion (see `ssbak completion -h`)
 
