@@ -1,6 +1,6 @@
 # Changelog
 
-## [development]
+## [0.0.6-beta]
 
 - Add drive checks to ensure enough space for sspak creation / extraction
 
