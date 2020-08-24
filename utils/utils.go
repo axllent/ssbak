@@ -9,7 +9,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"syscall"
 
 	"github.com/axllent/ssbak/app"
 )
@@ -62,30 +61,6 @@ func CalcSize(path string) (int64, error) {
 // Convert an int64 to uint64
 func int64Touint64(val int64) uint64 {
 	return uint64(val)
-}
-
-// HasEnoughSpace will return an error message if the provided path does not
-// have sufficient storage space
-func HasEnoughSpace(path string, requiredSize int64) error {
-	if runtime.GOOS == "windows" {
-		// we don't check on Windows
-		return nil
-	}
-
-	var stat syscall.Statfs_t
-
-	syscall.Statfs(path, &stat)
-
-	// Available blocks * size per block = available space in bytes
-	remainingBytes := stat.Bavail * uint64(stat.Bsize)
-
-	storageExpected := uint64(requiredSize)
-
-	if storageExpected > remainingBytes {
-		return fmt.Errorf("%s does not have enough space available (+-%s required)", path, ByteToHr(requiredSize))
-	}
-
-	return nil
 }
 
 // ByteToHr returns a human readable size as a string
