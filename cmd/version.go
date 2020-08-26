@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/axllent/ssbak/app"
 	"github.com/axllent/ssbak/utils"
 	"github.com/spf13/cobra"
 )
@@ -38,7 +39,7 @@ var versionCmd = &cobra.Command{
 		fmt.Printf("Version: %s\n", Version)
 		latest, _, _, err := utils.GithubLatest(Repo, RepoBinaryName)
 		if err == nil && utils.GreaterThan(latest, Version) {
-			fmt.Printf("Update available: %s\nRun `%s version --update` to update (requires read/write access to install directory).\n", latest, os.Args[0])
+			fmt.Printf("Update available: %s\nRun `%s version -u` to update (requires read/write access to install directory).\n", latest, os.Args[0])
 		}
 
 		return nil
@@ -50,6 +51,9 @@ func init() {
 
 	versionCmd.Flags().
 		BoolP("update", "u", false, "update to latest version")
+
+	versionCmd.Flags().
+		BoolVarP(&app.Verbose, "verbose", "v", false, "verbose output")
 }
 
 func updateApp() error {

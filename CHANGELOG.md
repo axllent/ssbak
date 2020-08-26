@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.0.7-beta]
+
+- Switch to compressed releases (tar.gz/zip). This release will have both compressed and uncompressed to allow older versions to catch up.
+
+
 ## [0.0.6-beta]
 
 - Add drive checks to ensure enough space for sspak creation / extraction
