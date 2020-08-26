@@ -1,6 +1,6 @@
 # Changelog
 
-## [develop]
+## [0.0.7-beta]
 
 - Switch to compressed releases (tar.gz/zip). This release will have both compressed and uncompressed to allow older versions to catch up.
 
