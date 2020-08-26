@@ -42,6 +42,8 @@ type Release struct {
 func GithubLatest(repo, name string) (string, string, string, error) {
 	releaseURL := fmt.Sprintf("https://api.github.com/repos/%s/releases", repo)
 
+	app.Log(fmt.Sprintf("Downloading releases from %s", releaseURL))
+
 	resp, err := http.Get(releaseURL)
 	if err != nil {
 		return "", "", "", err
@@ -56,9 +58,10 @@ func GithubLatest(repo, name string) (string, string, string, error) {
 
 	linkOS := runtime.GOOS
 	linkArch := runtime.GOARCH
-	linkExt := ""
+	linkExt := ".tar.gz"
 	if linkOS == "windows" {
-		linkExt = ".exe"
+		// Windows uses .zip instead
+		linkExt = ".zip"
 	}
 
 	var allReleases = []Release{}
@@ -66,6 +69,8 @@ func GithubLatest(repo, name string) (string, string, string, error) {
 	var releases Releases
 
 	json.Unmarshal(body, &releases)
+
+	archiveName := fmt.Sprintf("%s_%s_%s%s", name, linkOS, linkArch, linkExt)
 
 	// loop through releases
 	for _, r := range releases {
@@ -79,10 +84,8 @@ func GithubLatest(repo, name string) (string, string, string, error) {
 			continue
 		}
 
-		binaryName := fmt.Sprintf("%s_%s_%s%s", name, linkOS, linkArch, linkExt)
-
 		for _, a := range r.Assets {
-			if a.Name == binaryName {
+			if a.Name == archiveName {
 				thisRelease := Release{a.Name, r.Tag, a.BrowserDownloadURL, a.Size}
 				allReleases = append(allReleases, thisRelease)
 				break
@@ -130,11 +133,31 @@ func GithubUpdate(repo, appName, currentVersion string) (string, error) {
 	}
 
 	tmpDir := app.GetTempDir()
+
+	// outFile can be a tar.gz or a zip, depending on architecture
 	outFile := filepath.Join(tmpDir, filename)
 
 	if err := DownloadToFile(downloadURL, outFile); err != nil {
 		return "", err
 	}
+
+	newExec := filepath.Join(tmpDir, "ssbak")
+
+	app.Log(fmt.Sprintf("Extracting %s", outFile))
+
+	if runtime.GOOS == "windows" {
+		if _, err := Unzip(outFile, tmpDir); err != nil {
+			return "", err
+		}
+		newExec = filepath.Join(tmpDir, "ssbak.exe")
+	} else {
+		if err := TarGZExtract(outFile, tmpDir); err != nil {
+			return "", err
+		}
+	}
+
+	app.AddTempFile(outFile)
+	app.AddTempFile(newExec)
 
 	// get the running binary
 	oldExec, err := os.Executable()
@@ -142,7 +165,9 @@ func GithubUpdate(repo, appName, currentVersion string) (string, error) {
 		panic(err)
 	}
 
-	if err = ReplaceFile(oldExec, outFile); err != nil {
+	app.Log(fmt.Sprintf("Replacing %s with %s", oldExec, newExec))
+
+	if err = ReplaceFile(oldExec, newExec); err != nil {
 		return "", err
 	}
 
@@ -151,6 +176,8 @@ func GithubUpdate(repo, appName, currentVersion string) (string, error) {
 
 // DownloadToFile downloads a URL to a file
 func DownloadToFile(url, filepath string) error {
+	app.Log(fmt.Sprintf("Downloading %s to %s", url, filepath))
+
 	// Get the data
 	resp, err := http.Get(url)
 	if err != nil {
