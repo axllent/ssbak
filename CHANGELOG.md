@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.8-beta]
+
+- Ensure correct path is used when detecting available space (*nix)
+- Extract directories with 0755 permissions until chmod()
+
+
 ## [0.0.7-beta]
 
 - Switch to compressed releases (tar.gz/zip). This release will have both compressed and uncompressed to allow older versions to catch up.
