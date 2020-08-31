@@ -42,6 +42,10 @@ func AssetsFromTarGz(tmpDir, assetsBase string) error {
 
 	inSize, _ := CalcSize(in)
 
+	if assetsBase == "" {
+		assetsBase = "."
+	}
+
 	// Test output directory has sufficient space. It's not entirely
 	// accurate as we are using a targz value, but we do not know the output size.
 	if err := HasEnoughSpace(assetsBase, inSize); err != nil {

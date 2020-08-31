@@ -26,7 +26,7 @@ func TarGZCompress(inputFilePath, outputFilePath string) (err error) {
 	if err != nil {
 		return err
 	}
-	undoDir, err := mkdirAll(filepath.Dir(outputFilePath), 0775)
+	undoDir, err := mkdirAll(filepath.Dir(outputFilePath), 0755)
 	if err != nil {
 		return err
 	}
@@ -53,7 +53,7 @@ func TarGZExtract(inputFilePath, outputFilePath string) (err error) {
 	if err != nil {
 		return err
 	}
-	undoDir, err := mkdirAll(outputFilePath, 0775)
+	undoDir, err := mkdirAll(outputFilePath, 0755)
 	if err != nil {
 		return err
 	}
@@ -325,7 +325,7 @@ func extract(filePath string, directory string) error {
 
 		if fileInfo.IsDir() {
 			// create the directory 755 in case writing permissions prohibit writing before files added
-			err = os.MkdirAll(filename, 755)
+			err = os.MkdirAll(filename, 0755)
 			if err != nil {
 				return err
 			}
@@ -341,7 +341,7 @@ func extract(filePath string, directory string) error {
 
 		// make sure parent directory exists (may not be included in tar)
 		if !fileInfo.IsDir() && !IsDir(dir) {
-			err = os.MkdirAll(dir, 0775)
+			err = os.MkdirAll(dir, 0755)
 			if err != nil {
 				return err
 			}

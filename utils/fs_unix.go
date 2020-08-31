@@ -4,15 +4,17 @@ package utils
 
 import (
 	"fmt"
+	"path"
 	"syscall"
 )
 
-// HasEnoughSpace will return an error message if the provided path does not
+// HasEnoughSpace will return an error message if the provided location does not
 // have sufficient storage space
-func HasEnoughSpace(path string, requiredSize int64) error {
+func HasEnoughSpace(location string, requiredSize int64) error {
+	location = path.Join(location)
 	var stat syscall.Statfs_t
 
-	syscall.Statfs(path, &stat)
+	syscall.Statfs(location, &stat)
 
 	// Available blocks * size per block = available space in bytes
 	remainingBytes := stat.Bavail * uint64(stat.Bsize)
@@ -20,7 +22,12 @@ func HasEnoughSpace(path string, requiredSize int64) error {
 	storageExpected := uint64(requiredSize)
 
 	if storageExpected > remainingBytes {
-		return fmt.Errorf("%s does not have enough space available (+-%s required)", path, ByteToHr(requiredSize))
+		return fmt.Errorf(
+			"'%s' does not have enough space available (+-%s required, %s available)",
+			location,
+			ByteToHr(requiredSize),
+			ByteToHr(int64(remainingBytes)),
+		)
 	}
 
 	return nil
