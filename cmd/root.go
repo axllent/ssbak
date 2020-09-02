@@ -14,9 +14,10 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "ssbak",
 	Short: "SSBak: manage SilverStripe .sspak archives.",
-	Long:  `SSBak - sspak database/asset backup tool for SilverStripe.`,
-	// 	Example: `  ssbak load . website.sspak # restores a backup
-	//   ssbak save website.sspak   # saves a backup`,
+	Long: `SSBak - sspak database/asset backup tool for SilverStripe.
+
+Support/Documentation
+  https://github.com/axllent/ssbak`,
 	SilenceUsage:  true, // suppress help screen on error
 	SilenceErrors: true, // suppress duplicate error on error
 	PersistentPostRunE: func(cmd *cobra.Command, args []string) error {
