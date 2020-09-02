@@ -60,6 +60,11 @@ func Execute() {
 }
 
 func init() {
+	// hide the `help` command
+	rootCmd.SetHelpCommand(&cobra.Command{
+		Hidden: true,
+	})
+
 	// Clean up temporary files on cancel
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs,

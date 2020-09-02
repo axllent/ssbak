@@ -14,8 +14,8 @@ import (
 // saveexistingCmd represents the saveexisting command
 var saveexistingCmd = &cobra.Command{
 	Use:     "saveexisting <sspak>",
-	Short:   "Create an .sspak file from an existing database SQL dump and/or assets folder",
-	Long:    `Create an .sspak file from an existing database SQL dump and/or assets directory.`,
+	Short:   "Create .sspak backup from existing database SQL dump and/or assets",
+	Long:    `Create .sspak backup from an existing database SQL dump and/or assets folder.`,
 	Example: `  ssbak saveexisting website.sspak --db="database.sql" --assets="public/assets"`,
 	Args:    cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
