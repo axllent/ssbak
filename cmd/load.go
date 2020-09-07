@@ -14,7 +14,7 @@ import (
 // loadCmd represents the load command
 var loadCmd = &cobra.Command{
 	Use:     "load <sspak> [<webroot>]",
-	Short:   "Restore an .sspak backup of your database and/or assets",
+	Short:   "Restore database and/or assets from .sspak backup",
 	Long:    `Restore an .sspak file for a SilverStripe site. Deletes existing table data & assets so be careful!`,
 	Example: `  ssbak load website.sspak`,
 	Args:    cobra.RangeArgs(1, 2),

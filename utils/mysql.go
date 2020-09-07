@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/axllent/ssbak/app"
 )
@@ -28,20 +29,22 @@ func MySQLDumpToGz(gzipFile string) error {
 		"--set-charset",
 		"--default-character-set=utf8",
 		"--compress",
+		"--no-tablespaces",
 	}
 
 	if app.DB.Port != "" {
 		args = append(args, "-P", app.DB.Port)
 	}
 
-	args = append(args, "-h", app.DB.Host, "-u", app.DB.Username, app.DB.Name)
-
-	cmd := exec.Command(mysqldump, args...)
+	args = append(args, "-h", app.DB.Host, "-u", app.DB.Username)
 
 	if app.DB.Password != "" {
-		// Export MySQL password
-		cmd.Env = append(os.Environ(), "MYSQL_PWD="+app.DB.Password)
+		args = append(args, "-p"+app.DB.Password)
 	}
+
+	args = append(args, app.DB.Name)
+
+	cmd := exec.Command(mysqldump, args...)
 
 	app.Log(fmt.Sprintf("Dumping database to '%s'", gzipFile))
 
@@ -71,7 +74,11 @@ func MySQLDumpToGz(gzipFile string) error {
 	}
 
 	if errbuf.String() != "" {
-		return errors.New(errbuf.String())
+		errorStr := strings.TrimSpace(errbuf.String())
+		// if MySQL returns a warning about password on the commandline, ignore, else return error
+		if !strings.HasSuffix(errorStr, "Using a password on the command line interface can be insecure.") {
+			return errors.New(errorStr)
+		}
 	}
 
 	outSize, _ := CalcSize(gzipFile)
@@ -104,7 +111,13 @@ func MySQLCreateDB(dropDatabase bool) error {
 
 	app.Log(fmt.Sprintf("Creating database (if not exists) `%s`", app.DB.Name))
 
-	args = append(args, "-h", app.DB.Host, "-u", app.DB.Username, "-e", sql)
+	args = append(args, "-h", app.DB.Host, "-u", app.DB.Username)
+
+	if app.DB.Password != "" {
+		args = append(args, "-p"+app.DB.Password)
+	}
+
+	args = append(args, "-e", sql)
 
 	cmd := exec.Command(mysql, args...)
 
@@ -120,7 +133,11 @@ func MySQLCreateDB(dropDatabase bool) error {
 	}
 
 	if errbuf.String() != "" {
-		return errors.New(errbuf.String())
+		errorStr := strings.TrimSpace(errbuf.String())
+		// if MySQL returns a warning about password on the commandline, ignore, else return error
+		if !strings.HasSuffix(errorStr, "Using a password on the command line interface can be insecure.") {
+			return errors.New(errorStr)
+		}
 	}
 
 	return nil
@@ -140,14 +157,15 @@ func MySQLLoadFromGz(gzipSQLFile string) error {
 
 	args := []string{"--default-character-set=utf8"}
 
-	args = append(args, "-h", app.DB.Host, "-u", app.DB.Username, app.DB.Name)
-
-	cmd := exec.Command(mysql, args...)
+	args = append(args, "-h", app.DB.Host, "-u", app.DB.Username)
 
 	if app.DB.Password != "" {
-		// Export MySQL password
-		cmd.Env = append(os.Environ(), "MYSQL_PWD="+app.DB.Password)
+		args = append(args, "-p"+app.DB.Password)
 	}
+
+	args = append(args, app.DB.Name)
+
+	cmd := exec.Command(mysql, args...)
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {

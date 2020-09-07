@@ -29,15 +29,17 @@ It was written to address backup/restore size limitations of the original SSPak 
 ```
 SSBak - sspak database/asset backup tool for SilverStripe.
 
+Support/Documentation
+  https://github.com/axllent/ssbak
+
 Usage:
   ssbak [command]
 
 Available Commands:
-  extract      Extract an .sspak archive
-  help         Help about any command
-  load         Restore an .sspak backup of your database and/or assets
-  save         Create an .sspak backup of your database and/or assets
-  saveexisting Create an .sspak file from an existing database SQL dump and/or assets folder
+  extract      Extract .sspak backup
+  load         Restore database and/or assets from .sspak backup
+  save         Create .sspak backup of database and/or assets
+  saveexisting Create .sspak backup from existing database SQL dump and/or assets
   version      Display the app version & update information
 
 Flags:

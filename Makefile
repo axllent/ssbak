@@ -1,5 +1,4 @@
-TAG=`git describe --tags`
-VERSION ?= `[ -d ".git" ] && git describe --tags || echo "0.0.0"`
+VERSION ?= "dev"
 LDFLAGS=-ldflags "-s -w -X github.com/axllent/ssbak/cmd.Version=${VERSION}"
 BINARY=ssbak
 
