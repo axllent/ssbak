@@ -1,6 +1,6 @@
 # Changelog
 
-## [develop]
+## [0.0.9-beta]
 
 - Add `--no-tablespaces` to mysqldump command to prevent MySQL user permission errors in some cases.
 - Pass mysql(dump) passwords on the command line. MySQL v5.7 does not support `MYSQL_PWD`, `--defaults-file` overrides system settings, and `--defaults-extra-file` is superseded by the existence of `~/.my.cnf`. This seems to be the only reliable solution for all versions of MySQL/MariaDB.
