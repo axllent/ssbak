@@ -2,7 +2,8 @@
 
 ## [develop]
 
-- Add `--no-tablespaces` to mysqldump command to prevent mysql user permission errors in some cases
+- Add `--no-tablespaces` to mysqldump command to prevent MySQL user permission errors in some cases.
+- Pass mysql(dump) passwords on the command line. MySQL v5.7 does not support `MYSQL_PWD`, `--defaults-file` overrides system settings, and `--defaults-extra-file` is superseded by the existence of `~/.my.cnf`. This seems to be the only reliable solution for all versions of MySQL/MariaDB.
 
 
 ## [0.0.8-beta]
@@ -32,7 +33,7 @@
 
 - Save file & directory permissions, timestamps, uid & gid
 - Restore file & directory permissions, timestamps, uid & gid (if permitted)
-- Add `--ignore-resampled` option to save or restore without resampled images.
+- Add `--ignore-resampled` option to save or restore without resampled images
 
 
 ## [0.0.3-beta]
