@@ -1,5 +1,10 @@
 # Changelog
 
+## [develop]
+
+- Remove darwin 32-bit builds - no longer supported by Go 1.15
+
+
 ## [0.0.9-beta]
 
 - Add `--no-tablespaces` to mysqldump command to prevent MySQL user permission errors in some cases.
