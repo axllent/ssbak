@@ -28,6 +28,7 @@ func MySQLDumpToGz(gzipFile string) error {
 		"--set-charset",
 		"--default-character-set=utf8",
 		"--compress",
+		"--no-tablespaces",
 	}
 
 	if app.DB.Port != "" {

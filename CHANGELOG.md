@@ -1,5 +1,10 @@
 # Changelog
 
+## [develop]
+
+- Add `--no-tablespaces` to mysqldump command to prevent mysql user permission errors in some cases
+
+
 ## [0.0.8-beta]
 
 - Ensure correct path is used when detecting available space (*nix)
