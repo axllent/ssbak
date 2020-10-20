@@ -6,11 +6,18 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 	"regexp"
 	"strings"
 
 	"github.com/joho/godotenv"
 )
+
+// ConfigFile struct
+type configFile struct {
+	Path string
+	PHP  bool
+}
 
 // BoostrapEnv sets up the SilverStripe environment
 func BoostrapEnv(dir string) error {
@@ -18,15 +25,24 @@ func BoostrapEnv(dir string) error {
 		return fmt.Errorf("%s is not a directory", dir)
 	}
 
-	ProjectRoot = dir
+	d, err := filepath.Abs(dir)
+	if err != nil {
+		return err
+	}
 
-	if isFile(path.Join(dir, ".env")) {
-		if err := setFromEnvFile(path.Join(dir, ".env")); err != nil {
-			return err
-		}
-	} else if isFile(path.Join(dir, "_ss_environment.php")) {
-		if err := setFromSsEnvironmentFile(path.Join(dir, "_ss_environment.php")); err != nil {
-			return err
+	ProjectRoot = d
+
+	conf, err := findConfig(ProjectRoot)
+	if err == nil {
+		Log(fmt.Sprintf("Parsing %s", conf.Path))
+		if conf.PHP {
+			if err := setFromSsEnvironmentFile(conf.Path); err != nil {
+				return err
+			}
+		} else {
+			if err := setFromEnvFile(conf.Path); err != nil {
+				return err
+			}
 		}
 	} else {
 		// show warning, but continue as the DB variables could have been exported
@@ -49,6 +65,31 @@ func BoostrapEnv(dir string) error {
 	}
 
 	return nil
+}
+
+// FindConfig will return a configuration file path & type if found
+func findConfig(dir string) (configFile, error) {
+	r := configFile{}
+	if isFile(path.Join(dir, ".env")) {
+		r.Path = path.Join(dir, ".env")
+		return r, nil
+	}
+	if isFile(path.Join(filepath.Dir(dir), ".env")) {
+		r.Path = path.Join(filepath.Dir(dir), ".env")
+		return r, nil
+	}
+	if isFile(path.Join(dir, "_ss_environment.php")) {
+		r.Path = path.Join(dir, "_ss_environment.php")
+		r.PHP = true
+		return r, nil
+	}
+	if isFile(path.Join(filepath.Dir(dir), "_ss_environment.php")) {
+		r.Path = path.Join(filepath.Dir(dir), "_ss_environment.php")
+		r.PHP = true
+		return r, nil
+	}
+
+	return r, errors.New("Config not found")
 }
 
 // Extracts variables from an .env file
