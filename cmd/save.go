@@ -13,7 +13,7 @@ import (
 var saveCmd = &cobra.Command{
 	Use:     "save <webroot> <sspak>",
 	Short:   "Create .sspak backup of database and/or assets",
-	Long:    `Create .sspak archive from a SilverStripe database and/or assets.`,
+	Long:    `Create .sspak archive from a Silverstripe database and/or assets.`,
 	Example: `  ssbak save ./ website.sspak`,
 	Args:    cobra.ExactArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {

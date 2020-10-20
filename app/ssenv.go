@@ -19,7 +19,7 @@ type configFile struct {
 	PHP  bool
 }
 
-// BoostrapEnv sets up the SilverStripe environment
+// BoostrapEnv sets up the Silverstripe environment
 func BoostrapEnv(dir string) error {
 	if !isDir(dir) {
 		return fmt.Errorf("%s is not a directory", dir)
@@ -46,7 +46,7 @@ func BoostrapEnv(dir string) error {
 		}
 	} else {
 		// show warning, but continue as the DB variables could have been exported
-		fmt.Printf("Cannot find an SilverStripe config in %s\n", dir)
+		fmt.Printf("Cannot find an Silverstripe config in %s\n", dir)
 	}
 
 	if DB.Name == "" {

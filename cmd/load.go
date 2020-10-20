@@ -15,7 +15,7 @@ import (
 var loadCmd = &cobra.Command{
 	Use:     "load <sspak> [<webroot>]",
 	Short:   "Restore database and/or assets from .sspak backup",
-	Long:    `Restore an .sspak file for a SilverStripe site. Deletes existing table data & assets so be careful!`,
+	Long:    `Restore an .sspak file for a Silverstripe site. Deletes existing table data & assets so be careful!`,
 	Example: `  ssbak load website.sspak`,
 	Args:    cobra.RangeArgs(1, 2),
 	RunE: func(cmd *cobra.Command, args []string) error {
