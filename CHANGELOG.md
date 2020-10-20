@@ -1,6 +1,6 @@
 # Changelog
 
-## [develop]
+## [0.1.0]
 
 - Remove darwin 32-bit builds - no longer supported by Go 1.15
 - Support for configs in parent directory
