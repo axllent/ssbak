@@ -1,13 +1,13 @@
-# SSBak - asset and database backup tool for SilverStripe
+# SSBak - asset and database backup tool for Silverstripe
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/axllent/ssbak)](https://goreportcard.com/report/github.com/axllent/ssbak)
 
 
-**SSBak** is a backup & restore tool for [SilverStripe](https://www.silverstripe.org) websites, written in Go. It backs up the assets and database, and based on (and largely compatible with) [SSPak](https://github.com/silverstripe/sspak).
+**SSBak** is a backup & restore tool for [Silverstripe](https://www.silverstripe.org) websites, written in Go. It backs up the assets and database, and is heavily based on (and largely compatible with) [SSPak](https://github.com/silverstripe/sspak).
 
 ### Why rewrite SSPak?
 
-It was written to address backup/restore size limitations of the original SSPak utility, and can largely work as a drop-in replacement for SSPak (see [features](#features) and [limitations](#limitations)). SSPak has a nasty file size limitation due to undocumented PharData limits (see [1](https://github.com/silverstripe/sspak/issues/53), [2](https://github.com/silverstripe/sspak/issues/29) and [3](https://github.com/silverstripe/sspak/pull/52)). I have personally experienced these issues with SSPak and archives over 4GB, which resulted in partial assets backups with no warnings or errors at the time of backup. 
+It was written to solve the backup/restore size limitations of the original SSPak utility, and can largely work as a drop-in replacement for SSPak (see [features](#features) and [limitations](#limitations)). SSPak has a nasty file size limitation due to undocumented PharData limits (see [1](https://github.com/silverstripe/sspak/issues/53), [2](https://github.com/silverstripe/sspak/issues/29) and [3](https://github.com/silverstripe/sspak/pull/52)). I have personally experienced these issues with SSPak and archives over 4GB, which resulted in partial asset backups with no warnings or errors at the time of backup. 
 
 **SSBak does not have these file size limitations**.
 
@@ -15,11 +15,11 @@ It was written to address backup/restore size limitations of the original SSPak 
 ## Features
 
 - Completely compatible with the default .sspak file format (tar non-executable files).
-- Create and restore database and/or assets from a SilverStripe website regardless of asset / database size.
-- Optionally create or restore without resampled images (`--ignore-resampled`). Note: this skips most common image manipulations except for ResizedImages which are usually generated for HTMLText and cannot be regenerated "on the fly". Experimental.
-- SSBak does not use PHP at all (see [limitations](#limitations)).
+- Create and restore database and/or assets from a Silverstripe website regardless of asset / database size.
+- Optionally create or restore without resampled images (`--ignore-resampled`). Note: this skips most common image manipulations except for ResizedImages which are usually generated for HTMLText and cannot be regenerated "on the fly". (Experimental feature).
+- SSBak does not require or use PHP at all (see [limitations](#limitations)).
 - Multiplatform static binaries (Linux, Mac & Windows). The only system requirements are `mysql`(.exe) and `mysqldump`(.exe). All other actions such as tar, gzip etc are handled directly in SSBak.
-- Checks temporary and output drives have sufficient space before doing operations (Linux / Mac only)
+- Checks temporary and output locations have sufficient storage space before doing operations (Linux / Mac only)
 - Optional verbose output to see what it is doing.
 - Shell completion (see `ssbak completion -h`)
 
@@ -27,7 +27,7 @@ It was written to address backup/restore size limitations of the original SSPak 
 ## Usage
 
 ```
-SSBak - sspak database/asset backup tool for SilverStripe.
+SSBak - sspak database/asset backup tool for Silverstripe.
 
 Support/Documentation
   https://github.com/axllent/ssbak
@@ -81,5 +81,5 @@ TMPDIR="/drive/with/more/space" ssbak save . website.sspak
 SSBak is designed as a database & asset backup & restore tool, and is largely drop-in replacement for the existing SSPak tool. There are however a few limitations:
 
 - SSBak currently only supports MySQL databases. If there is demand for PostgreSQL then this can be requested and may be added in the future.
-- SSBak is written in Go which does not have any PHP-parsing capabilities. For all database dump & restore operations it requires either a `.env` or a `_ss_environment.php` file containing `SS_DATABASE_SERVER`, `SS_DATABASE_USERNAME`, `SS_DATABASE_PASSWORD` & `SS_DATABASE_NAME` in the **root** of your website folder (default location). You can however also export the required variables (see [Environment settings](#environment-settings))
+- SSBak is written in Go which does not have any PHP-parsing capabilities (it uses regular expressions). For all database dump & restore operations it requires either a `.env` or a `_ss_environment.php` file containing `SS_DATABASE_SERVER`, `SS_DATABASE_USERNAME`, `SS_DATABASE_PASSWORD` & `SS_DATABASE_NAME` in the **root** or parent directory of your website folder. You can however also export the required variables (see [Environment settings](#environment-settings)).
 - It does not (yet?) support remote ssh storage, `git-remote` / `install`, or CSV import/export features from SSPak.

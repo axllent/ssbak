@@ -13,8 +13,8 @@ import (
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "ssbak",
-	Short: "SSBak: manage SilverStripe .sspak archives.",
-	Long: `SSBak - sspak database/asset backup tool for SilverStripe.
+	Short: "SSBak: manage Silverstripe .sspak archives.",
+	Long: `SSBak - sspak database/asset backup tool for Silverstripe.
 
 Support/Documentation
   https://github.com/axllent/ssbak`,
