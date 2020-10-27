@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.1]
+
+- Bugfix: Set correct path when restoring assets to set project root
+
+
 ## [0.1.0]
 
 - Remove darwin 32-bit builds - no longer supported by Go 1.15
