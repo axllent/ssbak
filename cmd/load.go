@@ -19,17 +19,17 @@ var loadCmd = &cobra.Command{
 	Example: `  ssbak load website.sspak`,
 	Args:    cobra.RangeArgs(1, 2),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		base := "."
-		if len(args) == 2 {
-			base = args[1]
-		}
-
 		if !utils.IsFile(args[0]) {
 			return fmt.Errorf("'%s' does not exist", args[0])
 		}
 
 		if app.OnlyAssets && app.OnlyDB {
 			return errors.New("You cannot use --assets and --db flags together")
+		}
+
+		app.ProjectRoot = "."
+		if len(args) == 2 {
+			app.ProjectRoot = args[1]
 		}
 
 		var assetsBase string
@@ -51,7 +51,7 @@ var loadCmd = &cobra.Command{
 		app.AddTempFile(assetsFile)
 
 		if utils.IsFile(gzipSQLFile) && !app.OnlyAssets {
-			if err := app.BoostrapEnv(base); err != nil {
+			if err := app.BoostrapEnv(app.ProjectRoot); err != nil {
 				return err
 			}
 
