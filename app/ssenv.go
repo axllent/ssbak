@@ -8,6 +8,7 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/joho/godotenv"
@@ -101,11 +102,14 @@ func setFromEnvFile(file string) error {
 	DB.Host = os.Getenv("SS_DATABASE_SERVER")
 	DB.Username = os.Getenv("SS_DATABASE_USERNAME")
 	DB.Password = os.Getenv("SS_DATABASE_PASSWORD")
-	DB.Name = os.Getenv("SS_DATABASE_NAME")
+	DB.Name = os.Getenv("SS_DATABASE_PREFIX") +
+		os.Getenv("SS_DATABASE_NAME") +
+		os.Getenv("SS_DATABASE_SUFFIX")
 	DB.Type = os.Getenv("SS_DATABASE_CLASS")
+	DB.Port = os.Getenv("SS_DATABASE_PORT")
 
-	if os.Getenv("SS_DATABASE_PORT") != "" {
-		DB.Port = os.Getenv("SS_DATABASE_PORT")
+	if DB.Name == "" && os.Getenv("SS_DATABASE_CHOOSE_NAME") != "" {
+		DB.Name = dbChooseName(os.Getenv("SS_DATABASE_CHOOSE_NAME"))
 	}
 
 	return nil
@@ -127,11 +131,14 @@ func setFromSsEnvironmentFile(file string) error {
 	DB.Host = matchFromPhp(str, "SS_DATABASE_SERVER")
 	DB.Username = matchFromPhp(str, "SS_DATABASE_USERNAME")
 	DB.Password = matchFromPhp(str, "SS_DATABASE_PASSWORD")
-	DB.Name = matchFromPhp(str, "SS_DATABASE_NAME")
+	DB.Name = matchFromPhp(str, "SS_DATABASE_PREFIX") +
+		matchFromPhp(str, "SS_DATABASE_NAME") +
+		matchFromPhp(str, "SS_DATABASE_SUFFIX")
 	DB.Type = matchFromPhp(str, "SS_DATABASE_CLASS")
+	DB.Port = matchFromPhp(str, "SS_DATABASE_PORT")
 
-	if matchFromPhp(str, "SS_DATABASE_PORT") != "" {
-		DB.Port = matchFromPhp(str, "SS_DATABASE_PORT")
+	if DB.Name == "" && matchFromPhp(str, "SS_DATABASE_CHOOSE_NAME") != "" {
+		DB.Name = dbChooseName(matchFromPhp(str, "SS_DATABASE_CHOOSE_NAME"))
 	}
 
 	return nil
@@ -143,15 +150,42 @@ func matchFromPhp(code, key string) string {
 	if os.Getenv(key) != "" {
 		return os.Getenv(key)
 	}
-	var re = regexp.MustCompile(`(?mi)define\s*?\(\s*?['"]` + key + `['"]\s*?,\s*?(['"](.*)['"]|(\d+))\s*?\)\s*?;`)
+	var re = regexp.MustCompile(`(?mi)define\s*?\(\s*?['"]` + key + `['"]\s*?,\s*?(['"](.*)['"]|(\d+|true))\s*?\)\s*?;`)
 
 	matches := re.FindStringSubmatch(code)
 	if len(matches) == 4 {
 		if matches[2] == "" && matches[3] != "" {
 			return matches[3] // unquoted variable
 		}
+
 		return matches[2]
 	}
 
 	return ""
+}
+
+// DBChooseName will translate the SS_DATABASE_CHOOSE_NAME variable
+// into string based on the ProjectRoot.
+func dbChooseName(v string) string {
+	v = strings.ToLower(v)
+
+	if v == "true" {
+		v = "1"
+	}
+
+	i, err := strconv.Atoi(v)
+	if err != nil {
+		return ""
+	}
+
+	i = i - 1
+
+	f := ProjectRoot
+
+	// move up in the folder structure
+	for x := i; x > 0; x-- {
+		f = path.Dir(f)
+	}
+
+	return strings.Replace(fmt.Sprintf("SS_%s", path.Base(f)), ".", "", -1)
 }
