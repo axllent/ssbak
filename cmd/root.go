@@ -45,7 +45,7 @@ func Execute() {
 
 		// detect if subcommand is valid
 		help := "\nSee: `ssbak -h` for help"
-		if len(os.Args) > 0 {
+		if len(os.Args) > 1 {
 			for _, t := range rootCmd.Commands() {
 				if t.Name() == os.Args[1] {
 					help = "\nSee: `ssbak " + os.Args[1] + " -h` for help"
