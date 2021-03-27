@@ -14,7 +14,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "ssbak",
 	Short: "SSBak: manage Silverstripe .sspak archives.",
-	Long: `SSBak - sspak database/asset backup & retore tool for Silverstripe.
+	Long: `SSBak - sspak database/asset backup & restore tool for Silverstripe.
 
 Support/Documentation
   https://github.com/axllent/ssbak`,
@@ -31,7 +31,7 @@ Support/Documentation
 func Execute() {
 	altTmpDir := os.Getenv("TMPDIR")
 	if altTmpDir != "" {
-		app.Log(fmt.Sprintf("Alternate tmp directory detected '%s'", altTmpDir))
+		app.Log(fmt.Sprintf("Alternative tmp directory detected '%s'", altTmpDir))
 
 		app.TempDir = altTmpDir
 	}
