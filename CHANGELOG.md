@@ -1,6 +1,6 @@
 # Changelog
 
-## [dev]
+## [0.1.3]
 
 - Audit with [gosec](https://github.com/securego/gosec) (Golang Security Checker) and security fixes
 
