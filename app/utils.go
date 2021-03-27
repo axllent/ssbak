@@ -13,7 +13,9 @@ import (
 func GetTempDir() string {
 	if TempDir == "" {
 		randBytes := make([]byte, 6)
-		rand.Read(randBytes)
+		if _, err := rand.Read(randBytes); err != nil {
+			panic(err)
+		}
 		TempDir = filepath.Join(os.TempDir(), "ssbak-"+hex.EncodeToString(randBytes))
 		AddTempFile(TempDir)
 	}

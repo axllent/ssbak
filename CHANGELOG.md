@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.3]
+
+- Audit with [gosec](https://github.com/securego/gosec) (Golang Security Checker) and security fixes
+
+
 ## [0.1.2]
 
 - Add support for `SS_DATABASE_PREFIX`, `SS_DATABASE_SUFFIX` & `SS_DATABASE_CHOOSE_NAME`

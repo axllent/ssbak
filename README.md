@@ -62,7 +62,7 @@ To compile SSBak from source: `go get -u github.com/axllent/ssbak` (Go >= 1.11 r
 SSBak automatically tries to parse either a `.env` or a `_ss_environment.php` in your webroot to detect the database settings. You can however export (or override) any of the following values by exporting them first in your shell:
 
 - `SS_DATABASE_SERVER` **(required)**
-- `SS_DATABASE_NAME` **(required)**
+- `SS_DATABASE_NAME` **(required)** (supports `SS_DATABASE_PREFIX`, `SS_DATABASE_SUFFIX` & `SS_DATABASE_CHOOSE_NAME`)
 - `SS_DATABASE_USERNAME` **(required)**
 - `SS_DATABASE_PASSWORD`
 - `SS_DATABASE_PORT`

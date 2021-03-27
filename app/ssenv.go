@@ -117,7 +117,7 @@ func setFromEnvFile(file string) error {
 
 // Extracts from a _ss_environment.php file
 func setFromSsEnvironmentFile(file string) error {
-	phpb, err := ioutil.ReadFile(file)
+	phpb, err := ioutil.ReadFile(filepath.Clean(file))
 	if err != nil {
 		return err
 	}
