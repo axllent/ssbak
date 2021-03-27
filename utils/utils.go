@@ -80,17 +80,27 @@ func ByteToHr(b int64) string {
 
 // GzipFile will compress an existing file with gzip and save it was output
 func GzipFile(file, output string) error {
-	src, err := os.Open(file)
+	src, err := os.Open(filepath.Clean(file))
 	if err != nil {
 		return err
 	}
-	defer src.Close()
+
+	defer func() {
+		if err := src.Close(); err != nil {
+			fmt.Printf("Error closing file: %s\n", err)
+		}
+	}()
 
 	outFile, err := os.Create(output)
 	if err != nil {
 		return err
 	}
-	defer outFile.Close()
+
+	defer func() {
+		if err := outFile.Close(); err != nil {
+			fmt.Printf("Error closing file: %s\n", err)
+		}
+	}()
 
 	buf := bufio.NewWriter(outFile)
 	defer buf.Flush()
@@ -111,7 +121,7 @@ func GzipFile(file, output string) error {
 
 // Which locates a binary in the current $PATH.
 // It will append ".exe" to the filename if the platform is Windows.
-func Which(binName string) (string, error) {
+func which(binName string) (string, error) {
 	if runtime.GOOS == "windows" {
 		// append ".exe" to binary name if Windows
 		binName += ".exe"

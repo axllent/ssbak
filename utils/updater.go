@@ -44,7 +44,7 @@ func GithubLatest(repo, name string) (string, string, string, error) {
 
 	app.Log(fmt.Sprintf("Downloading releases from %s", releaseURL))
 
-	resp, err := http.Get(releaseURL)
+	resp, err := http.Get(releaseURL) // #nosec
 	if err != nil {
 		return "", "", "", err
 	}
@@ -68,7 +68,9 @@ func GithubLatest(repo, name string) (string, string, string, error) {
 
 	var releases Releases
 
-	json.Unmarshal(body, &releases)
+	if err := json.Unmarshal(body, &releases); err != nil {
+		return "", "", "", err
+	}
 
 	archiveName := fmt.Sprintf("%s_%s_%s%s", name, linkOS, linkArch, linkExt)
 
@@ -179,7 +181,7 @@ func DownloadToFile(url, filepath string) error {
 	app.Log(fmt.Sprintf("Downloading %s to %s", url, filepath))
 
 	// Get the data
-	resp, err := http.Get(url)
+	resp, err := http.Get(url) // #nosec
 	if err != nil {
 		return err
 	}
@@ -190,7 +192,12 @@ func DownloadToFile(url, filepath string) error {
 	if err != nil {
 		return err
 	}
-	defer out.Close()
+
+	defer func() {
+		if err := out.Close(); err != nil {
+			fmt.Printf("Error closing file: %s\n", err)
+		}
+	}()
 
 	// Write the body to file
 	_, err = io.Copy(out, resp.Body)
@@ -206,7 +213,7 @@ func DownloadToFile(url, filepath string) error {
 // so the old exe is renamed and moved to os.TempDir()
 func ReplaceFile(dst, src string) error {
 	// open the source file for reading
-	source, err := os.Open(src)
+	source, err := os.Open(filepath.Clean(src))
 	if err != nil {
 		return err
 	}
@@ -229,7 +236,7 @@ func ReplaceFile(dst, src string) error {
 	srcPerms := fi.Mode().Perm()
 
 	// create the new file
-	tmpNew, err := os.OpenFile(newTmpAbs, os.O_CREATE|os.O_RDWR, srcPerms)
+	tmpNew, err := os.OpenFile(filepath.Clean(newTmpAbs), os.O_CREATE|os.O_RDWR, srcPerms) // #nosec
 	if err != nil {
 		return err
 	}
@@ -240,8 +247,13 @@ func ReplaceFile(dst, src string) error {
 	}
 
 	// close immediately else Windows has a fit
-	tmpNew.Close()
-	source.Close()
+	if err := tmpNew.Close(); err != nil {
+		return err
+	}
+
+	if err := source.Close(); err != nil {
+		return err
+	}
 
 	// rename the current executable to <binary>.old
 	if err := os.Rename(dst, oldTmpAbs); err != nil {

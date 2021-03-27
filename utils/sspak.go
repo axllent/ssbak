@@ -14,12 +14,16 @@ import (
 
 // ExtractSSPak extracts a SSPak (tar) file
 func ExtractSSPak(sspakFile, outDir string) error {
-	r, err := os.Open(sspakFile)
+	r, err := os.Open(filepath.Clean(sspakFile))
 	if err != nil {
 		return err
 	}
 
-	defer r.Close()
+	defer func() {
+		if err := r.Close(); err != nil {
+			fmt.Printf("Error closing file: %s\n", err)
+		}
+	}()
 
 	if err := MkDirIfNotExists(outDir); err != nil {
 		return err
@@ -54,7 +58,7 @@ func ExtractSSPak(sspakFile, outDir string) error {
 			continue
 		}
 
-		target := filepath.Join(outDir, header.Name)
+		target := filepath.Join(outDir, filepath.Clean(header.Name))
 
 		// check the file type
 		switch header.Typeflag {
@@ -69,19 +73,22 @@ func ExtractSSPak(sspakFile, outDir string) error {
 
 		// if it's a file create it
 		case tar.TypeReg:
-			f, err := os.OpenFile(target, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode))
+			f, err := os.OpenFile(filepath.Clean(target), os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode))
 			if err != nil {
 				return err
 			}
 
 			// copy over contents
+			/* #nosec  - file is streamed from targz to file */
 			if _, err := io.Copy(f, tr); err != nil {
 				return err
 			}
 
 			// manually close here after each file operation; defering would cause each file close
 			// to wait until all operations have completed.
-			f.Close()
+			if err := f.Close(); err != nil {
+				return err
+			}
 
 			outSize, _ := CalcSize(target)
 			app.Log(fmt.Sprintf("Extracted '%s' (%s)", target, ByteToHr(outSize)))
@@ -119,7 +126,12 @@ func CreateSSPak(sspakFile string, files []string) error {
 	if err != nil {
 		return fmt.Errorf("Could not create '%s': %s", sspakFile, err.Error())
 	}
-	defer file.Close()
+
+	defer func() {
+		if err := file.Close(); err != nil {
+			fmt.Printf("Error closing file: %s\n", err)
+		}
+	}()
 
 	tarWriter := tar.NewWriter(file)
 	defer tarWriter.Close()
@@ -137,11 +149,16 @@ func CreateSSPak(sspakFile string, files []string) error {
 }
 
 func addFileToTarWriter(fileName, filePath string, tarWriter *tar.Writer) error {
-	file, err := os.Open(filePath)
+	file, err := os.Open(filepath.Clean(filePath))
 	if err != nil {
 		return fmt.Errorf("Could not open '%s': %s", filePath, err.Error())
 	}
-	defer file.Close()
+
+	defer func() {
+		if err := file.Close(); err != nil {
+			fmt.Printf("Error closing file: %s\n", err)
+		}
+	}()
 
 	stat, err := file.Stat()
 	if err != nil {

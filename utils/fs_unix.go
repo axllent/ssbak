@@ -14,7 +14,9 @@ func HasEnoughSpace(location string, requiredSize int64) error {
 	location = path.Join(location)
 	var stat syscall.Statfs_t
 
-	syscall.Statfs(location, &stat)
+	if err := syscall.Statfs(location, &stat); err != nil {
+		return err
+	}
 
 	// Available blocks * size per block = available space in bytes
 	remainingBytes := stat.Bavail * uint64(stat.Bsize)

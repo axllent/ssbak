@@ -14,7 +14,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "ssbak",
 	Short: "SSBak: manage Silverstripe .sspak archives.",
-	Long: `SSBak - sspak database/asset backup tool for Silverstripe.
+	Long: `SSBak - sspak database/asset backup & retore tool for Silverstripe.
 
 Support/Documentation
   https://github.com/axllent/ssbak`,
@@ -41,7 +41,7 @@ func Execute() {
 
 		// Clean up temporary files on error, don't print any cleanup errors
 		// as they would have already been returned above
-		app.Cleanup()
+		app.Cleanup() // #nosec
 
 		// detect if subcommand is valid
 		help := "\nSee: `ssbak -h` for help"

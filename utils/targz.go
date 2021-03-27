@@ -16,7 +16,7 @@ import (
 	"github.com/axllent/ssbak/app"
 )
 
-// TarGZCompress creates a archive from the folder inputFilePath points to in the file outputFilePath points to.
+// TarGZCompress creates a archive from the folder inputFilePath.
 // Only adds the last directory in inputFilePath to the archive, not the whole path.
 // It tries to create the directory structure outputFilePath contains if it doesn't exist.
 // It returns potential errors to be checked or nil if everything works.
@@ -26,7 +26,7 @@ func TarGZCompress(inputFilePath, outputFilePath string) (err error) {
 	if err != nil {
 		return err
 	}
-	undoDir, err := mkdirAll(filepath.Dir(outputFilePath), 0755)
+	undoDir, err := mkdirAll(filepath.Dir(outputFilePath), 0750)
 	if err != nil {
 		return err
 	}
@@ -44,7 +44,7 @@ func TarGZCompress(inputFilePath, outputFilePath string) (err error) {
 	return nil
 }
 
-// TarGZExtract extracts a archive from the file inputFilePath points to in the directory outputFilePath points to.
+// TarGZExtract extracts a archive from the file inputFilePath.
 // It tries to create the directory structure outputFilePath contains if it doesn't exist.
 // It returns potential errors to be checked or nil if everything works.
 func TarGZExtract(inputFilePath, outputFilePath string) (err error) {
@@ -53,7 +53,7 @@ func TarGZExtract(inputFilePath, outputFilePath string) (err error) {
 	if err != nil {
 		return err
 	}
-	undoDir, err := mkdirAll(outputFilePath, 0755)
+	undoDir, err := mkdirAll(outputFilePath, 0750)
 	if err != nil {
 		return err
 	}
@@ -104,7 +104,11 @@ func mkdirAll(dirPath string, perm os.FileMode) (func(), error) {
 		return nil, err
 	}
 
-	return func() { os.RemoveAll(undoDir) }, nil
+	return func() {
+		if err := os.RemoveAll(undoDir); err != nil {
+			panic(err)
+		}
+	}, nil
 }
 
 // Remove trailing slash if any.
@@ -143,9 +147,12 @@ func compress(inPath, outFilePath, subPath string) (err error) {
 	if err != nil {
 		return err
 	}
+
 	defer func() {
 		if err != nil {
-			os.Remove(outFilePath)
+			if err := os.Remove(outFilePath); err != nil {
+				panic(err)
+			}
 		}
 	}()
 
@@ -237,11 +244,16 @@ func writeDirectory(directory string, tarWriter *tar.Writer, subPath string) err
 
 // Write path without the prefix in subPath to tar writer.
 func writeTarGz(path string, tarWriter *tar.Writer, fileInfo os.FileInfo, subPath string) error {
-	file, err := os.Open(path)
+	file, err := os.Open(filepath.Clean(path))
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+
+	defer func() {
+		if err := file.Close(); err != nil {
+			fmt.Printf("Error closing file: %s\n", err)
+		}
+	}()
 
 	evaledPath, err := filepath.EvalSymlinks(path)
 	if err != nil {
@@ -283,11 +295,16 @@ func writeTarGz(path string, tarWriter *tar.Writer, fileInfo os.FileInfo, subPat
 
 // Extract the file in filePath to directory.
 func extract(filePath string, directory string) error {
-	file, err := os.Open(filePath)
+	file, err := os.Open(filepath.Clean(filePath))
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+
+	defer func() {
+		if err := file.Close(); err != nil {
+			fmt.Printf("Error closing file: %s\n", err)
+		}
+	}()
 
 	gzipReader, err := gzip.NewReader(bufio.NewReader(file))
 	if err != nil {
@@ -325,14 +342,13 @@ func extract(filePath string, directory string) error {
 
 		if fileInfo.IsDir() {
 			// create the directory 755 in case writing permissions prohibit writing before files added
-			err = os.MkdirAll(filename, 0755)
-			if err != nil {
+			if err := os.MkdirAll(filename, 0750); err != nil {
 				return err
 			}
 
 			// set file ownership (if allowed)
 			// Chtimes() && Chmod() only set after once extraction is complete
-			os.Chown(filename, header.Uid, header.Gid)
+			os.Chown(filename, header.Uid, header.Gid) // #nosec
 
 			// add directory info to slice to process afterwards
 			postExtraction = append(postExtraction, DirInfo{filename, header})
@@ -341,7 +357,7 @@ func extract(filePath string, directory string) error {
 
 		// make sure parent directory exists (may not be included in tar)
 		if !fileInfo.IsDir() && !IsDir(dir) {
-			err = os.MkdirAll(dir, 0755)
+			err = os.MkdirAll(dir, 0750)
 			if err != nil {
 				return err
 			}
@@ -381,9 +397,9 @@ func extract(filePath string, directory string) error {
 		}
 
 		// set file permissions, timestamps & uid/gid
-		os.Chmod(filename, os.FileMode(header.Mode))
-		os.Chtimes(filename, header.AccessTime, header.ModTime)
-		os.Chown(filename, header.Uid, header.Gid)
+		os.Chmod(filename, os.FileMode(header.Mode))            // #nosec
+		os.Chtimes(filename, header.AccessTime, header.ModTime) // #nosec
+		os.Chown(filename, header.Uid, header.Gid)              // #nosec
 	}
 
 	if len(postExtraction) > 0 {
@@ -391,8 +407,8 @@ func extract(filePath string, directory string) error {
 		app.Log(fmt.Sprintf("Setting timestamps for %d extracted directories", len(postExtraction)))
 
 		for _, dir := range postExtraction {
-			os.Chtimes(dir.Path, dir.Header.AccessTime, dir.Header.ModTime)
-			os.Chmod(dir.Path, dir.Header.FileInfo().Mode().Perm())
+			os.Chtimes(dir.Path, dir.Header.AccessTime, dir.Header.ModTime) // #nosec
+			os.Chmod(dir.Path, dir.Header.FileInfo().Mode().Perm())         // #nosec
 		}
 	}
 

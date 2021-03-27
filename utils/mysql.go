@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/axllent/ssbak/app"
@@ -16,7 +17,7 @@ import (
 
 // MySQLDumpToGz uses mysqldump to stream a database dump directly into a gzip file
 func MySQLDumpToGz(gzipFile string) error {
-	mysqldump, err := Which("mysqldump")
+	mysqldump, err := which("mysqldump")
 	if err != nil {
 		return err
 	}
@@ -44,7 +45,7 @@ func MySQLDumpToGz(gzipFile string) error {
 
 	args = append(args, app.DB.Name)
 
-	cmd := exec.Command(mysqldump, args...)
+	cmd := exec.Command(mysqldump, args...) // #nosec
 
 	app.Log(fmt.Sprintf("Dumping database to '%s'", gzipFile))
 
@@ -52,7 +53,12 @@ func MySQLDumpToGz(gzipFile string) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+
+	defer func() {
+		if err := f.Close(); err != nil {
+			fmt.Printf("Error closing file: %s\n", err)
+		}
+	}()
 
 	gzw := gzip.NewWriter(f)
 	defer gzw.Close()
@@ -69,6 +75,8 @@ func MySQLDumpToGz(gzipFile string) error {
 	if err := cmd.Start(); err != nil {
 		return err
 	}
+
+	/* #nosec  - file is streamed from pipe to gzip file */
 	if _, err := io.Copy(gzw, pipe); err != nil {
 		return err
 	}
@@ -89,7 +97,7 @@ func MySQLDumpToGz(gzipFile string) error {
 
 // MySQLCreateDB a database, optionally dropping it
 func MySQLCreateDB(dropDatabase bool) error {
-	mysql, err := Which("mysql")
+	mysql, err := which("mysql")
 	if err != nil {
 		return err
 	}
@@ -119,7 +127,7 @@ func MySQLCreateDB(dropDatabase bool) error {
 
 	args = append(args, "-e", sql)
 
-	cmd := exec.Command(mysql, args...)
+	cmd := exec.Command(mysql, args...) // #nosec
 
 	if app.DB.Password != "" {
 		// Export MySQL password
@@ -146,7 +154,7 @@ func MySQLCreateDB(dropDatabase bool) error {
 // MySQLLoadFromGz loads a GZ database file into the database,
 // streaming the gz file to the mysql cli.
 func MySQLLoadFromGz(gzipSQLFile string) error {
-	mysql, err := Which("mysql")
+	mysql, err := which("mysql")
 	if err != nil {
 		return err
 	}
@@ -165,19 +173,23 @@ func MySQLLoadFromGz(gzipSQLFile string) error {
 
 	args = append(args, app.DB.Name)
 
-	cmd := exec.Command(mysql, args...)
+	cmd := exec.Command(mysql, args...) // #nosec
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	f, err := os.Open(gzipSQLFile)
+	f, err := os.Open(filepath.Clean(gzipSQLFile))
 	if err != nil {
 		return err
 	}
 
-	defer f.Close()
+	defer func() {
+		if err := f.Close(); err != nil {
+			fmt.Printf("Error closing file: %s\n", err)
+		}
+	}()
 
 	reader, err := gzip.NewReader(f)
 	if err != nil {
@@ -187,7 +199,10 @@ func MySQLLoadFromGz(gzipSQLFile string) error {
 
 	go func() {
 		defer stdin.Close()
-		io.Copy(stdin, reader)
+		/* #nosec  - file is streamed from pipe to gzip file */
+		if _, err := io.Copy(stdin, reader); err != nil {
+			panic(err)
+		}
 	}()
 
 	if _, err := cmd.CombinedOutput(); err != nil {
