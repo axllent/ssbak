@@ -1,4 +1,4 @@
-# SSBak - asset and database backup tool for Silverstripe
+# SSBak - sspak database/asset backup & restore tool for Silverstripe
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/axllent/ssbak)](https://goreportcard.com/report/github.com/axllent/ssbak)
 
@@ -14,12 +14,12 @@ It was written to solve the backup/restore size limitations of the original SSPa
 
 ## Features
 
-- Completely compatible with the default .sspak file format (tar non-executable files).
+- Compatible with the default `*.sspak` file format (tar non-executable files).
 - Create and restore database and/or assets from a Silverstripe website regardless of asset / database size.
-- Optionally create or restore without resampled images (`--ignore-resampled`). Note: this skips most common image manipulations except for ResizedImages which are usually generated for HTMLText and cannot be regenerated "on the fly". (Experimental feature).
-- SSBak does not require or use PHP at all (see [limitations](#limitations)).
-- Multiplatform static binaries (Linux, Mac & Windows). The only system requirements are `mysql`(.exe) and `mysqldump`(.exe). All other actions such as tar, gzip etc are handled directly in SSBak.
-- Checks temporary and output locations have sufficient storage space before doing operations (Linux / Mac only)
+- Optionally create or restore without resampled images (`--ignore-resampled`). Note: this skips most common image manipulations except for `ResizedImages` which are usually generated for HTMLText and cannot be regenerated "on the fly".
+- SSBak does not require (or use) PHP at all (see [limitations](#limitations)).
+- Multiplatform static binaries (Linux, Mac & Windows). The only system requirements are `mysql`(.exe) and `mysqldump`(.exe) in your path. All other actions such as tar, gzip etc are handled directly in SSBak.
+- Checks temporary and output locations have sufficient storage space **before** doing operations (Linux / Mac only)
 - Optional verbose output to see what it is doing.
 - Shell completion (see `ssbak completion -h`)
 
@@ -27,7 +27,7 @@ It was written to solve the backup/restore size limitations of the original SSPa
 ## Usage
 
 ```
-SSBak - sspak database/asset backup tool for Silverstripe.
+SSBak - sspak database/asset backup & restore tool for Silverstripe.
 
 Support/Documentation
   https://github.com/axllent/ssbak
@@ -51,7 +51,7 @@ Use "ssbak [command] --help" for more information about a command.
 
 ## Installation & requirements
 
-- Download a suitable binary for your architecture (see [releases](https://github.com/axllent/ssbak/releases/latest)), make it executable and place it in your $PATH. You can optionally save this as SSPak to use as a drop-in replacement for SSPak (see [limitations](#limitations)).
+- Download a suitable binary for your architecture (see [releases](https://github.com/axllent/ssbak/releases/latest)), extract the make it executable and place it in your $PATH. You can optionally save this as SSPak to use as a drop-in replacement for SSPak (see [limitations](#limitations)).
 - MySQL and MySQLDump must be installed and in your $PATH. SSBak uses these system tools for backing up and restoring database backups.
 
 To compile SSBak from source: `go get -u github.com/axllent/ssbak` (Go >= 1.11 required).
