@@ -83,3 +83,13 @@ SSBak is designed as a database & asset backup & restore tool, and is largely dr
 - SSBak currently only supports MySQL databases. If there is demand for PostgreSQL then this can be requested and may be added in the future.
 - SSBak is written in Go which does not have any PHP-parsing capabilities (it uses regular expressions). For all database dump & restore operations it requires either a `.env` or a `_ss_environment.php` file containing `SS_DATABASE_SERVER`, `SS_DATABASE_USERNAME`, `SS_DATABASE_PASSWORD` & `SS_DATABASE_NAME` in the **root** or parent directory of your website folder. You can however also export the required variables (see [Environment settings](#environment-settings)).
 - It does not (yet?) support remote ssh storage, `git-remote` / `install`, or CSV import/export features from SSPak.
+
+
+## Issues & vulnerabilities
+
+Issues and vulnerabilities should be reported via the [Github issues tracker](https://github.com/axllent/ssbak/issues).
+
+
+## Contributing
+
+Code contributions should be supplied in the form of a merge request, and forked from the `develop` branch.
