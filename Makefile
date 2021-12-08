@@ -20,6 +20,7 @@ release:
 	mkdir -p dist
 	rm -f dist/${BINARY}_*
 	$(call build,linux,amd64,)
+	$(call build,linux,arm64,)
 	$(call build,linux,386,)
 	$(call build,darwin,amd64,)
 	$(call build,darwin,arm64,)
