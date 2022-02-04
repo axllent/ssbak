@@ -86,3 +86,22 @@ func isDir(path string) bool {
 
 	return true
 }
+
+// RealPath will return the actual path if the path is a symbolic link
+func RealPath(filename string) string {
+	fi, err := os.Lstat(filename)
+	if err != nil {
+		panic(err)
+	}
+
+	if fi.Mode()&os.ModeSymlink == os.ModeSymlink {
+		realPath, err := filepath.EvalSymlinks(filename)
+		if err != nil {
+			panic(err)
+		}
+
+		return realPath
+	}
+
+	return filename
+}
