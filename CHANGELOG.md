@@ -1,5 +1,10 @@
 # Changelog
 
+## [dev]
+
+- Disable pre-release versions for update notifications / updates
+
+
 ## [0.1.4-beta]
 
 - Add support for `.env` and `assets` symbolic links

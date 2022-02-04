@@ -29,9 +29,6 @@ var versionCmd = &cobra.Command{
 
 		update, _ := cmd.Flags().GetBool("update")
 
-		// Allow prereleases
-		utils.AllowPrereleases = true
-
 		if update {
 			return updateApp()
 		}
