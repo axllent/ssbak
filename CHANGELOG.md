@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.4-beta]
+
+- Add support for `.env` and `assets` symbolic links
+
+
 ## [0.1.3]
 
 - Audit with [gosec](https://github.com/securego/gosec) (Golang Security Checker) and security fixes

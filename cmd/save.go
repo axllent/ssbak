@@ -45,9 +45,9 @@ var saveCmd = &cobra.Command{
 			var assetsDir string
 
 			if utils.IsDir(path.Join(app.ProjectRoot, "assets")) {
-				assetsDir = path.Join(app.ProjectRoot, "assets")
+				assetsDir = app.RealPath(path.Join(app.ProjectRoot, "assets"))
 			} else if utils.IsDir(path.Join(app.ProjectRoot, "public", "assets")) {
-				assetsDir = path.Join(app.ProjectRoot, "public", "assets")
+				assetsDir = app.RealPath(path.Join(app.ProjectRoot, "public", "assets"))
 			} else {
 				return errors.New("Could not locate assets directory")
 			}

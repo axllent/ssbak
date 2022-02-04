@@ -72,20 +72,20 @@ func BoostrapEnv(dir string) error {
 func findConfig(dir string) (configFile, error) {
 	r := configFile{}
 	if isFile(path.Join(dir, ".env")) {
-		r.Path = path.Join(dir, ".env")
+		r.Path = RealPath(path.Join(dir, ".env"))
 		return r, nil
 	}
 	if isFile(path.Join(filepath.Dir(dir), ".env")) {
-		r.Path = path.Join(filepath.Dir(dir), ".env")
+		r.Path = RealPath(path.Join(filepath.Dir(dir), ".env"))
 		return r, nil
 	}
 	if isFile(path.Join(dir, "_ss_environment.php")) {
-		r.Path = path.Join(dir, "_ss_environment.php")
+		r.Path = RealPath(path.Join(dir, "_ss_environment.php"))
 		r.PHP = true
 		return r, nil
 	}
 	if isFile(path.Join(filepath.Dir(dir), "_ss_environment.php")) {
-		r.Path = path.Join(filepath.Dir(dir), "_ss_environment.php")
+		r.Path = RealPath(path.Join(filepath.Dir(dir), "_ss_environment.php"))
 		r.PHP = true
 		return r, nil
 	}
