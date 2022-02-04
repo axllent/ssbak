@@ -1,6 +1,6 @@
 # Changelog
 
-## [dev]
+## [0.1.4]
 
 - Disable pre-release versions for update notifications / updates
 
