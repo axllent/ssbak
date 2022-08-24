@@ -33,25 +33,30 @@ func MySQLDumpToGz(gzipFile string) error {
 		"--no-tablespaces",
 	}
 
+	if dbHasColumnStatistics() {
+		args = append(args, "--column-statistics=0")
+	}
+
 	if app.DB.Port != "" {
 		args = append(args, "-P", app.DB.Port)
 	}
 
 	args = append(args, "-h", app.DB.Host, "-u", app.DB.Username)
 
-	if app.DB.Password != "" {
-		args = append(args, "-p"+app.DB.Password)
-	}
-
 	args = append(args, app.DB.Name)
 
 	cmd := exec.Command(mysqldump, args...) // #nosec
+
+	if app.DB.Password != "" {
+		// Export MySQL password
+		cmd.Env = append(os.Environ(), "MYSQL_PWD="+app.DB.Password)
+	}
 
 	app.Log(fmt.Sprintf("Dumping database to '%s'", gzipFile))
 
 	f, err := os.Create(gzipFile)
 	if err != nil {
-		return err
+		return fmt.Errorf("Error creating database backup: %s", err.Error())
 	}
 
 	defer func() {
@@ -69,16 +74,16 @@ func MySQLDumpToGz(gzipFile string) error {
 
 	pipe, err := cmd.StdoutPipe()
 	if err != nil {
-		return err
+		return fmt.Errorf("Error dumping database: %s", err.Error())
 	}
 
 	if err := cmd.Start(); err != nil {
-		return err
+		return fmt.Errorf("Error dumping database: %s", err.Error())
 	}
 
 	/* #nosec  - file is streamed from pipe to gzip file */
 	if _, err := io.Copy(gzw, pipe); err != nil {
-		return err
+		return fmt.Errorf("Error compressing database: %s", err.Error())
 	}
 
 	if errbuf.String() != "" {
@@ -120,10 +125,6 @@ func MySQLCreateDB(dropDatabase bool) error {
 	app.Log(fmt.Sprintf("Creating database (if not exists) `%s`", app.DB.Name))
 
 	args = append(args, "-h", app.DB.Host, "-u", app.DB.Username)
-
-	if app.DB.Password != "" {
-		args = append(args, "-p"+app.DB.Password)
-	}
 
 	args = append(args, "-e", sql)
 
@@ -167,13 +168,14 @@ func MySQLLoadFromGz(gzipSQLFile string) error {
 
 	args = append(args, "-h", app.DB.Host, "-u", app.DB.Username)
 
-	if app.DB.Password != "" {
-		args = append(args, "-p"+app.DB.Password)
-	}
-
 	args = append(args, app.DB.Name)
 
 	cmd := exec.Command(mysql, args...) // #nosec
+
+	if app.DB.Password != "" {
+		// Export MySQL password
+		cmd.Env = append(os.Environ(), "MYSQL_PWD="+app.DB.Password)
+	}
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
@@ -212,4 +214,32 @@ func MySQLLoadFromGz(gzipSQLFile string) error {
 	app.Log(fmt.Sprintf("Imported '%s' to `%s`", gzipSQLFile, app.DB.Name))
 
 	return nil
+}
+
+// Run MySQL 8 compatibility check to see if --column-statistics=0 must get added.
+// If command returns an error then it doesn't support it.
+// @see: https://github.com/silverstripe/sspak/issues/81
+func dbHasColumnStatistics() bool {
+	mysqldump, err := which("mysqldump")
+	if err != nil {
+		return false
+	}
+
+	args := []string{"--no-data", "--column-statistics=0"}
+	if app.DB.Port != "" {
+		args = append(args, "-P", app.DB.Port)
+	}
+	args = append(args, "-h", app.DB.Host, "-u", app.DB.Username)
+	args = append(args, app.DB.Name)
+
+	cmd := exec.Command(mysqldump, args...) // #nosec
+
+	if app.DB.Password != "" {
+		// Export MySQL password
+		cmd.Env = append(os.Environ(), "MYSQL_PWD="+app.DB.Password)
+	}
+
+	err = cmd.Run()
+
+	return err == nil
 }
