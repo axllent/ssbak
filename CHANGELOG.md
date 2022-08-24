@@ -1,8 +1,9 @@
 # Changelog
 
-## [dev]
+## [1.0.0]
 
 - Add GitHub Actions to build binaries
+- Add `--column-statistics=0` for supported MySQL (v8) servers
 
 
 ## [0.1.4]
