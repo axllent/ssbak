@@ -54,7 +54,7 @@ Use "ssbak [command] --help" for more information about a command.
 - Download a suitable binary for your architecture (see [releases](https://github.com/axllent/ssbak/releases/latest)), extract the make it executable and place it in your $PATH. You can optionally save this as SSPak to use as a drop-in replacement for SSPak (see [limitations](#limitations)).
 - MySQL and MySQLDump must be installed and in your $PATH. SSBak uses these system tools for backing up and restoring database backups.
 
-To compile SSBak from source: `go get -u github.com/axllent/ssbak` (Go >= 1.11 required).
+To compile SSBak from source: `go install github.com/axllent/ssbak@latest` (Go >= 1.14 required).
 
 
 ## Environment settings
