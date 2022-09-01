@@ -43,14 +43,20 @@ func MySQLDumpToGz(gzipFile string) error {
 
 	args = append(args, "-h", app.DB.Host, "-u", app.DB.Username)
 
+	// older versions of mysqldump do not support exported passwords
+	if app.DB.Password != "" {
+		args = append(args, "-p"+app.DB.Password)
+	}
+
 	args = append(args, app.DB.Name)
 
 	cmd := exec.Command(mysqldump, args...) // #nosec
 
-	if app.DB.Password != "" {
-		// Export MySQL password
-		cmd.Env = append(os.Environ(), "MYSQL_PWD="+app.DB.Password)
-	}
+	// eventually this should be supported, but not yet (eg: mysql on ubuntu 18)
+	// if app.DB.Password != "" {
+	// 	// Export MySQL password
+	// 	cmd.Env = append(os.Environ(), "MYSQL_PWD="+app.DB.Password)
+	// }
 
 	app.Log(fmt.Sprintf("Dumping database to '%s'", gzipFile))
 
@@ -126,14 +132,20 @@ func MySQLCreateDB(dropDatabase bool) error {
 
 	args = append(args, "-h", app.DB.Host, "-u", app.DB.Username)
 
+	// older versions of mysqldump do not support exported passwords
+	if app.DB.Password != "" {
+		args = append(args, "-p"+app.DB.Password)
+	}
+
 	args = append(args, "-e", sql)
 
 	cmd := exec.Command(mysql, args...) // #nosec
 
-	if app.DB.Password != "" {
-		// Export MySQL password
-		cmd.Env = append(os.Environ(), "MYSQL_PWD="+app.DB.Password)
-	}
+	// eventually this should be supported, but not yet (eg: mysql on ubuntu 18)
+	// if app.DB.Password != "" {
+	// 	// Export MySQL password
+	// 	cmd.Env = append(os.Environ(), "MYSQL_PWD="+app.DB.Password)
+	// }
 
 	var errbuf bytes.Buffer
 	cmd.Stderr = &errbuf
@@ -168,14 +180,20 @@ func MySQLLoadFromGz(gzipSQLFile string) error {
 
 	args = append(args, "-h", app.DB.Host, "-u", app.DB.Username)
 
+	// older versions of mysqldump do not support exported passwords
+	if app.DB.Password != "" {
+		args = append(args, "-p"+app.DB.Password)
+	}
+
 	args = append(args, app.DB.Name)
 
 	cmd := exec.Command(mysql, args...) // #nosec
 
-	if app.DB.Password != "" {
-		// Export MySQL password
-		cmd.Env = append(os.Environ(), "MYSQL_PWD="+app.DB.Password)
-	}
+	// eventually this should be supported, but not yet (eg: mysql on ubuntu 18)
+	// if app.DB.Password != "" {
+	// 	// Export MySQL password
+	// 	cmd.Env = append(os.Environ(), "MYSQL_PWD="+app.DB.Password)
+	// }
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
@@ -230,14 +248,21 @@ func dbHasColumnStatistics() bool {
 		args = append(args, "-P", app.DB.Port)
 	}
 	args = append(args, "-h", app.DB.Host, "-u", app.DB.Username)
+
+	// older versions of mysqldump do not support exported passwords
+	if app.DB.Password != "" {
+		args = append(args, "-p"+app.DB.Password)
+	}
+
 	args = append(args, app.DB.Name)
 
 	cmd := exec.Command(mysqldump, args...) // #nosec
 
-	if app.DB.Password != "" {
-		// Export MySQL password
-		cmd.Env = append(os.Environ(), "MYSQL_PWD="+app.DB.Password)
-	}
+	// eventually this should be supported, but not yet (eg: mysql on ubuntu 18)
+	// if app.DB.Password != "" {
+	// 	// Export MySQL password
+	// 	cmd.Env = append(os.Environ(), "MYSQL_PWD="+app.DB.Password)
+	// }
 
 	err = cmd.Run()
 

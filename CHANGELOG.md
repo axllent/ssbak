@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.1]
+
+- Revert to adding password to mysqldump arguments (older MySQL clients do not support env variable)
+
+
 ## [1.0.0]
 
 - Add GitHub Actions to build binaries
