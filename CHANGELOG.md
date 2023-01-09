@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.2]
+
+- Add `--set-gtid-purged=OFF` to dump arguments to prevent GTIDs warning
+- Update go modules
+
 ## [1.0.1]
 
 - Revert to adding password to mysqldump arguments (older MySQL clients do not support env variable)
