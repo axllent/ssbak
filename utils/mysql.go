@@ -31,7 +31,6 @@ func MySQLDumpToGz(gzipFile string) error {
 		"--default-character-set=utf8",
 		"--compress",
 		"--no-tablespaces",
-		"--set-gtid-purged=OFF",
 	}
 
 	if dbHasColumnStatistics() {
