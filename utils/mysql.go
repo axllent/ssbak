@@ -95,7 +95,8 @@ func MySQLDumpToGz(gzipFile string) error {
 	if errbuf.String() != "" {
 		errorStr := strings.TrimSpace(errbuf.String())
 		// if MySQL returns a warning about password on the commandline, ignore, else return error
-		if !strings.HasSuffix(errorStr, "Using a password on the command line interface can be insecure.") {
+		if !strings.HasSuffix(errorStr, "Using a password on the command line interface can be insecure.") &&
+			!strings.HasSuffix(errorStr, "pass --set-gtid-purged=OFF. To make a complete dump, pass --all-databases --triggers --routines --events.") {
 			return errors.New(errorStr)
 		}
 	}

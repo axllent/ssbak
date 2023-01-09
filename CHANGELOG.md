@@ -3,6 +3,7 @@
 ## [1.0.3]
 
 - Revert `--set-gtid-purged=OFF` to dump arguments to prevent GTIDs warning - not supported on all systems
+- Silently ignore GTIDs warning warnings
 
 ## [1.0.2]
 
