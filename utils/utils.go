@@ -6,9 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"runtime"
 
 	"github.com/axllent/ssbak/app"
 )
@@ -117,17 +115,6 @@ func GzipFile(file, output string) error {
 	app.Log(fmt.Sprintf("Wrote '%s' (%s)", output, ByteToHr(outSize)))
 
 	return err
-}
-
-// Which locates a binary in the current $PATH.
-// It will append ".exe" to the filename if the platform is Windows.
-func which(binName string) (string, error) {
-	if runtime.GOOS == "windows" {
-		// append ".exe" to binary name if Windows
-		binName += ".exe"
-	}
-
-	return exec.LookPath(binName)
 }
 
 // SkipResampled detects whether the assets is a resampled image

@@ -1,14 +1,21 @@
 # Changelog
 
+## [1.1.0]
+
+- Native support for importing and exporting databases, eliminating MySQL client/server version incompatibility issues
+
+
 ## [1.0.3]
 
 - Revert `--set-gtid-purged=OFF` to dump arguments to prevent GTIDs warning - not supported on all systems
-- Silently ignore GTIDs warning warnings
+- Silently ignore GTIDs warnings
+
 
 ## [1.0.2]
 
 - Add `--set-gtid-purged=OFF` to dump arguments to prevent GTIDs warning
 - Update go modules
+
 
 ## [1.0.1]
 

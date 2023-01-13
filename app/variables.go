@@ -1,3 +1,4 @@
+// Package app handles all the application settings
 package app
 
 import "regexp"
