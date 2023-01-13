@@ -33,6 +33,7 @@ SSBak is a self-contained static binary written in Go, and does not use third pa
 - Checks temporary and output locations have sufficient storage space **before** doing operations (Linux / Mac only).
 - Optional verbose output to see what it is doing.
 - Shell completion (see `ssbak completion -h`).
+- Built in version check & self-updater
 
 
 ## Usage
