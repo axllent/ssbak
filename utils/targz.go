@@ -11,6 +11,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"syscall"
 
 	"github.com/axllent/ssbak/app"
@@ -143,7 +144,7 @@ func compress(inPath, outFilePath, subPath string) (err error) {
 		return errors.New("targz: input directory is empty")
 	}
 
-	file, err := os.Create(outFilePath)
+	file, err := os.Create(path.Clean(outFilePath))
 	if err != nil {
 		return err
 	}
@@ -333,8 +334,13 @@ func extract(filePath string, directory string) error {
 		}
 
 		fileInfo := header.FileInfo()
+
+		if !strings.HasPrefix(fileInfo.Name(), "..") {
+			continue
+		}
+
 		dir := filepath.Join(directory, filepath.Dir(header.Name))
-		filename := filepath.Join(dir, fileInfo.Name())
+		filename := filepath.Join(dir, path.Clean(fileInfo.Name()))
 
 		if skipResampled(filename) {
 			continue
@@ -363,12 +369,12 @@ func extract(filePath string, directory string) error {
 			}
 		}
 
-		file, err := os.Create(filename)
+		file, err := os.Create(filename) // #nosec
 		if err != nil {
 			return err
 		}
 
-		writer := bufio.NewWriter(file)
+		writer := bufio.NewWriter(file) // #nosec
 
 		buffer := make([]byte, 4096)
 		for {

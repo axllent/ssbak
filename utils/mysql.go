@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -35,7 +36,7 @@ func mysqlConfig() *mysql.Config {
 func MySQLDumpToGz(gzipFile string) error {
 	config := mysqlConfig()
 
-	f, err := os.Create(gzipFile)
+	f, err := os.Create(path.Clean(gzipFile))
 	if err != nil {
 		return fmt.Errorf("Error creating database backup: %s", err.Error())
 	}

@@ -122,7 +122,7 @@ func CreateSSPak(sspakFile string, files []string) error {
 		return err
 	}
 
-	file, err := os.Create(sspakFile)
+	file, err := os.Create(path.Clean(sspakFile))
 	if err != nil {
 		return fmt.Errorf("Could not create '%s': %s", sspakFile, err.Error())
 	}
