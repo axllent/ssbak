@@ -95,14 +95,14 @@ func MySQLCreateDB(dropDatabase bool) error {
 	createMsg := `Creating database (if not exists)`
 
 	if dropDatabase {
-		app.Log(fmt.Sprintf("Dropping database `%s`", app.DB.Name))
+		app.Log(fmt.Sprintf("Dropping database '%s'", app.DB.Name))
 		if _, err := db.Exec("DROP DATABASE IF EXISTS `" + app.DB.Name + "`"); err != nil {
 			return err
 		}
 		createMsg = `Creating database`
 	}
 
-	app.Log(fmt.Sprintf("%s `%s`", createMsg, app.DB.Name))
+	app.Log(fmt.Sprintf("%s '%s'", createMsg, app.DB.Name))
 	_, err = db.Exec("CREATE DATABASE IF NOT EXISTS `" + app.DB.Name + "`")
 
 	return err
@@ -147,7 +147,7 @@ func MySQLLoadFromGz(gzipSQLFile string) error {
 	cbuffer := make([]byte, 0, bufio.MaxScanTokenSize)
 	fileScanner.Buffer(cbuffer, bufio.MaxScanTokenSize*50) // Otherwise long lines crash the scanner
 
-	app.Log(fmt.Sprintf("Importing database `%s`", app.DB.Name))
+	app.Log(fmt.Sprintf("Importing database to '%s'", app.DB.Name))
 
 	sql := ""
 
@@ -170,6 +170,7 @@ func MySQLLoadFromGz(gzipSQLFile string) error {
 			sql = sql + "\n" + line
 		}
 	}
+
 	// if any sql remains, execute
 	if strings.TrimSpace(sql) != "" {
 		if _, err := db.Exec(sql); err != nil {
@@ -177,7 +178,7 @@ func MySQLLoadFromGz(gzipSQLFile string) error {
 		}
 	}
 
-	app.Log(fmt.Sprintf("Imported '%s' to `%s`", gzipSQLFile, app.DB.Name))
+	app.Log(fmt.Sprintf("Imported '%s' to '%s'", gzipSQLFile, app.DB.Name))
 
 	return err
 }
