@@ -63,7 +63,7 @@ Use "ssbak [command] --help" for more information about a command.
 
 ## Installation & requirements
 
-- Download a suitable binary for your architecture (see [releases](https://github.com/axllent/ssbak/releases/latest)), extract the make it executable and place it in your $PATH. You can optionally save this as SSPak to use as a drop-in replacement for SSPak (see [limitations](#limitations)).
+- Download a suitable binary for your architecture (see [releases](https://github.com/axllent/ssbak/releases/latest)), extract the make it executable and place it in your $PATH. You can optionally rename "ssbak" to "sspak" to use as a drop-in replacement for SSPak (see [limitations](#limitations)).
 
 To compile SSBak from source: `go install github.com/axllent/ssbak@latest` (Go >= 1.14 required).
 
