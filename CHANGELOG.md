@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.1]
+
+- Fix self-updater (sorry!). If you are running 1.1.0 the self-updater will not work, so you will have to update manually unfortunately.
+- Update Go braries + security updates
+
+
 ## [1.1.0]
 
 - Native support for importing and exporting databases, eliminating MySQL client/server version incompatibility issues

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path"
 	"path/filepath"
 
 	"github.com/axllent/ssbak/app"
@@ -89,7 +90,7 @@ func GzipFile(file, output string) error {
 		}
 	}()
 
-	outFile, err := os.Create(output)
+	outFile, err := os.Create(path.Clean(output))
 	if err != nil {
 		return err
 	}

@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"runtime"
 
@@ -188,7 +189,7 @@ func DownloadToFile(url, filepath string) error {
 	defer resp.Body.Close()
 
 	// Create the file
-	out, err := os.Create(filepath)
+	out, err := os.Create(path.Clean(filepath))
 	if err != nil {
 		return err
 	}
