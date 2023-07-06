@@ -53,6 +53,9 @@ func BootstrapEnv(dir string) error {
 	setFromEnv()
 
 	if DB.Name == "" {
+		if !dotEnvIgnored() {
+			fmt.Println("No .env file detected")
+		}
 		return errors.New("No database defined")
 	}
 
