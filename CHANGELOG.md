@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.2]
+
+- Allow .env loading to be skipped, and overwriting variables via environment (@ZaneA #6)
+- Update Go libs
+
+
 ## [1.1.1]
 
 - Fix self-updater (sorry!). If you are running 1.1.0 the self-updater will not work, so you will have to update manually unfortunately.
