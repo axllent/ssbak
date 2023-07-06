@@ -100,35 +100,31 @@ func findConfig(dir string) (configFile, error) {
 
 // Extract variables from the system environment if set
 func setFromEnv() {
-	if isEnvSet("SS_DATABASE_SERVER") {
-		DB.Host = os.Getenv("SS_DATABASE_SERVER")
+	if v, ok := os.LookupEnv("SS_DATABASE_SERVER"); ok {
+		DB.Host = v
 	}
-	if isEnvSet("SS_DATABASE_USERNAME") {
-		DB.Username = os.Getenv("SS_DATABASE_USERNAME")
+	if v, ok := os.LookupEnv("SS_DATABASE_SERVER"); ok {
+		DB.Host = v
 	}
-	if isEnvSet("SS_DATABASE_PASSWORD") {
-		DB.Password = os.Getenv("SS_DATABASE_PASSWORD")
+	if v, ok := os.LookupEnv("SS_DATABASE_USERNAME"); ok {
+		DB.Username = v
 	}
-	if isEnvSet("SS_DATABASE_NAME") {
-		DB.Name = os.Getenv("SS_DATABASE_PREFIX") +
-			os.Getenv("SS_DATABASE_NAME") +
-			os.Getenv("SS_DATABASE_SUFFIX")
+	if v, ok := os.LookupEnv("SS_DATABASE_PASSWORD"); ok {
+		DB.Password = v
 	}
-	if isEnvSet("SS_DATABASE_CLASS") {
-		DB.Type = os.Getenv("SS_DATABASE_CLASS")
+	if v, ok := os.LookupEnv("SS_DATABASE_NAME"); ok {
+		DB.Name = os.Getenv("SS_DATABASE_PREFIX") + v + os.Getenv("SS_DATABASE_SUFFIX")
 	}
-	if isEnvSet("SS_DATABASE_PORT") {
-		DB.Port = os.Getenv("SS_DATABASE_PORT")
+	if v, ok := os.LookupEnv("SS_DATABASE_CLASS"); ok {
+		DB.Type = v
+	}
+	if v, ok := os.LookupEnv("SS_DATABASE_PORT"); ok {
+		DB.Port = v
 	}
 
 	if DB.Name == "" && os.Getenv("SS_DATABASE_CHOOSE_NAME") != "" {
 		DB.Name = dbChooseName(os.Getenv("SS_DATABASE_CHOOSE_NAME"))
 	}
-}
-
-// wrapper to return whether an environment setting is set
-func isEnvSet(k string) bool {
-	return os.Getenv(k) != ""
 }
 
 // return whether the boolean/int SS_IGNORE_DOT_ENV is set
