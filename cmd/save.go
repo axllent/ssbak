@@ -17,7 +17,7 @@ var saveCmd = &cobra.Command{
 	Example: `  ssbak save ./ website.sspak`,
 	Args:    cobra.ExactArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if err := app.BoostrapEnv(args[0]); err != nil {
+		if err := app.BootstrapEnv(args[0]); err != nil {
 			return err
 		}
 

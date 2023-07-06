@@ -51,7 +51,7 @@ var loadCmd = &cobra.Command{
 		app.AddTempFile(assetsFile)
 
 		if utils.IsFile(gzipSQLFile) && !app.OnlyAssets {
-			if err := app.BoostrapEnv(app.ProjectRoot); err != nil {
+			if err := app.BootstrapEnv(app.ProjectRoot); err != nil {
 				return err
 			}
 

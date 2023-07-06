@@ -20,8 +20,8 @@ type configFile struct {
 	PHP  bool
 }
 
-// BoostrapEnv sets up the Silverstripe environment
-func BoostrapEnv(dir string) error {
+// BootstrapEnv sets up the Silverstripe environment
+func BootstrapEnv(dir string) error {
 	if !isDir(dir) {
 		return fmt.Errorf("%s is not a directory", dir)
 	}
