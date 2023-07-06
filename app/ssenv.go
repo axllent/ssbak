@@ -47,7 +47,10 @@ func BoostrapEnv(dir string) error {
 		}
 	} else {
 		// show warning, but continue as the DB variables could have been exported
-		fmt.Printf("Cannot find an Silverstripe config in %s\n", dir)
+		fmt.Printf("Cannot find a Silverstripe config in %s\n", dir)
+		fmt.Printf("Will attempt to continue using environment variables\n")
+
+		setFromEnv();
 	}
 
 	if DB.Name == "" {
@@ -93,12 +96,8 @@ func findConfig(dir string) (configFile, error) {
 	return r, errors.New("Config not found")
 }
 
-// Extracts variables from an .env file
-func setFromEnvFile(file string) error {
-	if err := godotenv.Load(file); err != nil {
-		return err
-	}
-
+// Extracts variables from the system environment
+func setFromEnv() {
 	DB.Host = os.Getenv("SS_DATABASE_SERVER")
 	DB.Username = os.Getenv("SS_DATABASE_USERNAME")
 	DB.Password = os.Getenv("SS_DATABASE_PASSWORD")
@@ -111,6 +110,15 @@ func setFromEnvFile(file string) error {
 	if DB.Name == "" && os.Getenv("SS_DATABASE_CHOOSE_NAME") != "" {
 		DB.Name = dbChooseName(os.Getenv("SS_DATABASE_CHOOSE_NAME"))
 	}
+}
+
+// Extracts variables from an .env file
+func setFromEnvFile(file string) error {
+	if err := godotenv.Load(file); err != nil {
+		return err
+	}
+
+	setFromEnv();
 
 	return nil
 }
