@@ -33,25 +33,24 @@ func BootstrapEnv(dir string) error {
 
 	ProjectRoot = d
 
-	conf, err := findConfig(ProjectRoot)
-	if err == nil {
-		Log(fmt.Sprintf("Parsing %s", conf.Path))
-		if conf.PHP {
-			if err := setFromSsEnvironmentFile(conf.Path); err != nil {
-				return err
-			}
-		} else {
-			if err := setFromEnvFile(conf.Path); err != nil {
-				return err
+	if !dotEnvIgnored() {
+		conf, err := findConfig(ProjectRoot)
+		if err == nil {
+			Log(fmt.Sprintf("Parsing %s", conf.Path))
+			if conf.PHP {
+				if err := setFromSsEnvironmentFile(conf.Path); err != nil {
+					return err
+				}
+			} else {
+				if err := godotenv.Load(conf.Path); err != nil {
+					return err
+				}
 			}
 		}
-	} else {
-		// show warning, but continue as the DB variables could have been exported
-		fmt.Printf("Cannot find a Silverstripe config in %s\n", dir)
-		fmt.Printf("Will attempt to continue using environment variables\n")
-
-		setFromEnv();
 	}
+
+	// load/overwrite variables from environment if set
+	setFromEnv()
 
 	if DB.Name == "" {
 		return errors.New("No database defined")
@@ -96,41 +95,54 @@ func findConfig(dir string) (configFile, error) {
 	return r, errors.New("Config not found")
 }
 
-// Extracts variables from the system environment
+// Extract variables from the system environment if set
 func setFromEnv() {
-	DB.Host = os.Getenv("SS_DATABASE_SERVER")
-	DB.Username = os.Getenv("SS_DATABASE_USERNAME")
-	DB.Password = os.Getenv("SS_DATABASE_PASSWORD")
-	DB.Name = os.Getenv("SS_DATABASE_PREFIX") +
-		os.Getenv("SS_DATABASE_NAME") +
-		os.Getenv("SS_DATABASE_SUFFIX")
-	DB.Type = os.Getenv("SS_DATABASE_CLASS")
-	DB.Port = os.Getenv("SS_DATABASE_PORT")
+	if isEnvSet("SS_DATABASE_SERVER") {
+		DB.Host = os.Getenv("SS_DATABASE_SERVER")
+	}
+	if isEnvSet("SS_DATABASE_USERNAME") {
+		DB.Username = os.Getenv("SS_DATABASE_USERNAME")
+	}
+	if isEnvSet("SS_DATABASE_PASSWORD") {
+		DB.Password = os.Getenv("SS_DATABASE_PASSWORD")
+	}
+	if isEnvSet("SS_DATABASE_NAME") {
+		DB.Name = os.Getenv("SS_DATABASE_PREFIX") +
+			os.Getenv("SS_DATABASE_NAME") +
+			os.Getenv("SS_DATABASE_SUFFIX")
+	}
+	if isEnvSet("SS_DATABASE_CLASS") {
+		DB.Type = os.Getenv("SS_DATABASE_CLASS")
+	}
+	if isEnvSet("SS_DATABASE_PORT") {
+		DB.Port = os.Getenv("SS_DATABASE_PORT")
+	}
 
 	if DB.Name == "" && os.Getenv("SS_DATABASE_CHOOSE_NAME") != "" {
 		DB.Name = dbChooseName(os.Getenv("SS_DATABASE_CHOOSE_NAME"))
 	}
 }
 
-// Extracts variables from an .env file
-func setFromEnvFile(file string) error {
-	if err := godotenv.Load(file); err != nil {
-		return err
-	}
+// wrapper to return whether an environment setting is set
+func isEnvSet(k string) bool {
+	return os.Getenv(k) != ""
+}
 
-	setFromEnv();
+// return whether the boolean/int SS_IGNORE_DOT_ENV is set
+func dotEnvIgnored() bool {
+	v := strings.ToLower(os.Getenv("SS_IGNORE_DOT_ENV"))
 
-	return nil
+	return v == "1" || v == "true"
 }
 
 // Extracts from a _ss_environment.php file
 func setFromSsEnvironmentFile(file string) error {
-	phpb, err := ioutil.ReadFile(filepath.Clean(file))
+	b, err := ioutil.ReadFile(filepath.Clean(file))
 	if err != nil {
 		return err
 	}
 
-	rawPHP := string(phpb)
+	rawPHP := string(b)
 
 	// strip out php comments
 	re := regexp.MustCompile("(?s)#.*?\n|(?s)//.*?\n|/\\*.*?\\*/")
@@ -152,7 +164,7 @@ func setFromSsEnvironmentFile(file string) error {
 	return nil
 }
 
-// MatchFromPhp uses regular expressiont to detect variables in a string
+// MatchFromPhp uses regular expressions to detect variables in a string
 func matchFromPhp(code, key string) string {
 	// allow exported environment values to override
 	if os.Getenv(key) != "" {
