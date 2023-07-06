@@ -335,7 +335,8 @@ func extract(filePath string, directory string) error {
 
 		fileInfo := header.FileInfo()
 
-		if strings.HasPrefix(fileInfo.Name(), "..") {
+		// skip any file that contains a `..` (eg: `../file`) - CWE-22
+		if strings.Contains(fileInfo.Name(), "..") {
 			continue
 		}
 

@@ -1,3 +1,4 @@
+// Package cmd is the main application
 package cmd
 
 import (
