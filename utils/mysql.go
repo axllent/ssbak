@@ -149,6 +149,12 @@ func MySQLLoadFromGz(gzipSQLFile string) error {
 
 	app.Log(fmt.Sprintf("Importing database to '%s'", app.DB.Name))
 
+	// ensure compatibility between MySQL & Mariadb, including older versions caused by
+	// `STRICT_TRANS_TABLES` and `STRICT_ALL_TABLES`
+	if _, err := db.Exec("SET sql_mode = '';"); err != nil {
+		return err
+	}
+
 	sql := ""
 
 	for fileScanner.Scan() {
