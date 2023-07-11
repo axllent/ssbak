@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.3]
+
+- Prevent errors on import due to `STRICT_TRANS_TABLES` and `STRICT_ALL_TABLES`
+
+
 ## [1.1.2]
 
 - Allow .env loading to be skipped, and overwriting variables via environment (@ZaneA #6)
