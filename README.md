@@ -86,6 +86,43 @@ By default SSBak uses your system temporary directory (eg: `/tmp/` on Linux/Mac)
 TMPDIR="/drive/with/more/space" ssbak save . website.sspak
 ```
 
+## Leave no trace usage
+
+If you are keen to use ssbak to make a website backup, without leaving the tools on the server, then you could do something like this (for Linux 64 setup):
+```shell
+
+# Fetch the latest tags from the GitHub repository
+git fetch --tags "https://github.com/axllent/ssbak.git"
+
+# Get the latest tag using 'git describe' command
+latest_tag=$(git describe --tags $(git rev-list --tags --max-count=1))
+
+# move README out of the way
+mv README.md README.md.bak
+
+# remove any files left from last time
+rm ssbak -rf
+rm ssbak_linux_amd64.tar.gz -rf
+rm ./backup.sspak -rf
+
+# download latest
+wget https://github.com/axllent/ssbak/releases/download/$latest_tag/ssbak_linux_amd64.tar.gz
+
+# install
+tar zxvf ssbak_linux_amd64.tar.gz
+chmod +x ./ssbak
+
+# backup 
+./ssbak save . ./backup.sspak
+
+# cleanup
+rm ssbak -rf
+rm ssbak_linux_amd64.tar.gz -rf
+rm LICENSE -rf
+rm README.md -rf
+mv README.md.bak README.md
+```
+
 
 ## Limitations
 
