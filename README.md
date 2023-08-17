@@ -8,7 +8,7 @@
 
 **SSBak** is a backup & restore tool for [Silverstripe](https://www.silverstripe.org) websites, written in Go. It backs up the assets and database, and is heavily based on (and largely compatible with) [SSPak](https://github.com/silverstripe/sspak). Unlike SSPak however, it does not require PHP, mysql client, tar, gzip etc to be installed as this is all handled directly within SSBak.
 
-It currently supports Silverstripe 3 & 4.
+It currently supports Silverstripe 3, 4 & 5.
 
 
 ### Why rewrite SSPak?
