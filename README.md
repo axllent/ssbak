@@ -8,7 +8,7 @@
 
 **SSBak** is a backup & restore tool for [Silverstripe](https://www.silverstripe.org) websites, written in Go. It backs up the assets and database, and is heavily based on (and largely compatible with) [SSPak](https://github.com/silverstripe/sspak). Unlike SSPak however, it does not require PHP, mysql client, tar, gzip etc to be installed as this is all handled directly within SSBak.
 
-It currently supports Silverstripe 3 & 4.
+It currently supports Silverstripe 3, 4 & 5.
 
 
 ### Why rewrite SSPak?
@@ -63,9 +63,15 @@ Use "ssbak [command] --help" for more information about a command.
 
 ## Installation & requirements
 
-- Download a suitable binary for your architecture (see [releases](https://github.com/axllent/ssbak/releases/latest)), extract the make it executable and place it in your $PATH. You can optionally rename "ssbak" to "sspak" to use as a drop-in replacement for SSPak (see [limitations](#limitations)).
+Download a suitable binary for your architecture (see [releases](https://github.com/axllent/ssbak/releases/latest)), extract the make it executable and place it in your $PATH. You can optionally rename "ssbak" to "sspak" to use as a drop-in replacement for SSPak (see [limitations](#limitations)).
 
-To compile SSBak from source: `go install github.com/axllent/ssbak@latest` (Go >= 1.14 required).
+If you need to programmatically install ssbak (amd64) to `/usr/local/bin/ssbak` you could:
+
+```bash
+curl -sL https://github.com/axllent/ssbak/releases/latest/download/ssbak_linux_amd64.tar.gz | sudo tar -zx -C /usr/local/bin/ ssbak
+```
+
+To install & compile SSBak from source: `go install github.com/axllent/ssbak@latest` (Go >= 1.14 required).
 
 
 ## Environment settings

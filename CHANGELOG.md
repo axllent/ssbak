@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.4]
+
+- Update Go modules
+- Update GitHub workflows
+
+
 ## [1.1.3]
 
 - Prevent errors on import due to `STRICT_TRANS_TABLES` and `STRICT_ALL_TABLES`
