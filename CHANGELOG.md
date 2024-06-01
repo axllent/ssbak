@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.5]
+
+- Update go-mysqldump (adds support for dumping VIEW tables)
+
+
 ## [1.1.4]
 
 - Update Go modules
