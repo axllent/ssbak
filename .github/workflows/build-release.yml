@@ -20,7 +20,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - uses: wangyoucao577/go-release-action@v1.50
+    - uses: wangyoucao577/go-release-action@v1
       with:
         binary_name: "ssbak"
         asset_name: "ssbak_${{ matrix.goos }}_${{ matrix.goarch }}"
