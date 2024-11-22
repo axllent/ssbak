@@ -58,11 +58,6 @@ func CalcSize(path string) (int64, error) {
 	return size, err
 }
 
-// Convert an int64 to uint64
-func int64Touint64(val int64) uint64 {
-	return uint64(val)
-}
-
 // ByteToHr returns a human readable size as a string
 func ByteToHr(b int64) string {
 	const unit = 1024
