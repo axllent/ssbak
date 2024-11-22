@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/axllent/ssbak/app"
 )
@@ -55,11 +56,6 @@ func CalcSize(path string) (int64, error) {
 		return err
 	})
 	return size, err
-}
-
-// Convert an int64 to uint64
-func int64Touint64(val int64) uint64 {
-	return uint64(val)
 }
 
 // ByteToHr returns a human readable size as a string
@@ -125,7 +121,8 @@ func skipResampled(filePath string) bool {
 	}
 
 	for _, r := range app.ResampledRegex {
-		if r.MatchString(filePath) {
+		// Silverstripe 5 generates thumbnails for CMS previews by default with `__FitMaxWzM1MiwyNjRd`
+		if !strings.Contains(filePath, "__FitMaxWzM1MiwyNjRd.") && r.MatchString(filePath) {
 			return true
 		}
 	}
