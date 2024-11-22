@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/axllent/ssbak/app"
 )
@@ -125,7 +126,8 @@ func skipResampled(filePath string) bool {
 	}
 
 	for _, r := range app.ResampledRegex {
-		if r.MatchString(filePath) {
+		// Silverstripe 5 generates thumbnails for CMS previews by default with `__FitMaxWzM1MiwyNjRd`
+		if !strings.Contains(filePath, "__FitMaxWzM1MiwyNjRd.") && r.MatchString(filePath) {
 			return true
 		}
 	}
