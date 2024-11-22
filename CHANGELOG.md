@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.6]
+
+- Exclude more resampled files, including converted (webp) and FocusPoint ones when using `--ignore-resampled`
+- Workaround for Silverstripe 5 thumbnails when using `--ignore-resampled`
+- Update Go dependencies
+
+
 ## [1.1.5]
 
 - Update go-mysqldump (adds support for dumping VIEW tables)
