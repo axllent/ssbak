@@ -71,18 +71,18 @@ func mkdirAll(dirPath string, perm os.FileMode) (func(), error) {
 	var undoDir string
 
 	for p := dirPath; ; p = path.Dir(p) {
-		finfo, err := os.Stat(p)
+		fInfo, err := os.Stat(p)
 		if err == nil {
-			if finfo.IsDir() {
+			if fInfo.IsDir() {
 				break
 			}
 
-			finfo, err = os.Lstat(p)
+			fInfo, err = os.Lstat(p)
 			if err != nil {
 				return nil, err
 			}
 
-			if finfo.IsDir() {
+			if fInfo.IsDir() {
 				break
 			}
 
@@ -192,7 +192,7 @@ func writeDirectory(directory string, tarWriter *tar.Writer, subPath string) err
 	if base.IsDir() {
 		// Add the directory header to tar so we can restore permissions etc
 		// calculate the relative path for tar
-		evaledPath, err := filepath.EvalSymlinks(directory)
+		evalPath, err := filepath.EvalSymlinks(directory)
 		if err != nil {
 			return err
 		}
@@ -202,7 +202,7 @@ func writeDirectory(directory string, tarWriter *tar.Writer, subPath string) err
 		}
 
 		// relative path
-		relativeDirName := evaledPath[len(subPath):]
+		relativeDirName := evalPath[len(subPath):]
 
 		// inherit directory permissions
 		header, err := tar.FileInfoHeader(base, base.Name())
@@ -259,7 +259,7 @@ func writeTarGz(path string, tarWriter *tar.Writer, fileInfo os.FileInfo, subPat
 		}
 	}()
 
-	evaledPath, err := filepath.EvalSymlinks(path)
+	evalPath, err := filepath.EvalSymlinks(path)
 	if err != nil {
 		return err
 	}
@@ -270,8 +270,8 @@ func writeTarGz(path string, tarWriter *tar.Writer, fileInfo os.FileInfo, subPat
 	}
 
 	link := ""
-	if evaledPath != path {
-		link = evaledPath
+	if evalPath != path {
+		link = evalPath
 	}
 
 	if skipResampled(path) {
@@ -282,7 +282,7 @@ func writeTarGz(path string, tarWriter *tar.Writer, fileInfo os.FileInfo, subPat
 	if err != nil {
 		return err
 	}
-	header.Name = evaledPath[len(subPath):]
+	header.Name = evalPath[len(subPath):]
 
 	err = tarWriter.WriteHeader(header)
 	if err != nil {
