@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
@@ -51,7 +50,7 @@ func GithubLatest(repo, name string) (string, string, string, error) {
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 
 	if err != nil {
 		return "", "", "", err
@@ -78,7 +77,7 @@ func GithubLatest(repo, name string) (string, string, string, error) {
 	// loop through releases
 	for _, r := range releases {
 		if !semver.IsValid(r.Tag) {
-			// Invalid semversion, skip
+			// Invalid semver, skip
 			continue
 		}
 

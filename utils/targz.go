@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -67,7 +66,7 @@ func TarGZExtract(inputFilePath, outputFilePath string) (err error) {
 	return extract(inputFilePath, outputFilePath)
 }
 
-// Creates all directories with os.MakedirAll and returns a function to remove the first created directory so cleanup is possible.
+// Creates all directories with os.MkdirAll and returns a function to remove the first created directory so cleanup is possible.
 func mkdirAll(dirPath string, perm os.FileMode) (func(), error) {
 	var undoDir string
 
@@ -135,7 +134,7 @@ func makeAbsolute(inputFilePath, outputFilePath string) (string, string, error) 
 // The finished archive contains just the directory added, not any parents.
 // This is possible by giving the whole path except the final directory in subPath.
 func compress(inPath, outFilePath, subPath string) (err error) {
-	files, err := ioutil.ReadDir(inPath)
+	files, err := os.ReadDir(inPath)
 	if err != nil {
 		return err
 	}
@@ -220,7 +219,7 @@ func writeDirectory(directory string, tarWriter *tar.Writer, subPath string) err
 		}
 	}
 
-	files, err := ioutil.ReadDir(directory)
+	files, err := os.ReadDir(directory)
 	if err != nil {
 		return err
 	}
@@ -233,7 +232,11 @@ func writeDirectory(directory string, tarWriter *tar.Writer, subPath string) err
 				return err
 			}
 		} else {
-			err = writeTarGz(currentPath, tarWriter, file, subPath)
+			fi, err := file.Info()
+			if err != nil {
+				return err
+			}
+			err = writeTarGz(currentPath, tarWriter, fi, subPath)
 			if err != nil {
 				return err
 			}
