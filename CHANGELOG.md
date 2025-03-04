@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.7]
+
+- Remove deprecated use of io/ioutil, resolves uncommon error of `archive/tar: write too long`
+- Update Go dependencies, update minimum Go version, downgrade go-mysqldump
+
+
 ## [1.1.6]
 
 - Exclude more resampled files, including converted (webp) and FocusPoint ones when using `--ignore-resampled`
