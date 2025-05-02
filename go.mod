@@ -6,7 +6,7 @@ toolchain go1.24.1
 require (
 	github.com/aliakseiz/go-mysqldump v1.1.0
 	github.com/axllent/semver v0.0.1
-	github.com/go-sql-driver/mysql v1.9.1
+	github.com/go-sql-driver/mysql v1.9.2
 	github.com/joho/godotenv v1.5.1
 	github.com/spf13/cobra v1.9.1
 )
