@@ -3,7 +3,6 @@ package app
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -54,20 +53,20 @@ func BootstrapEnv(dir string) error {
 
 	if DB.Name == "" {
 		if !dotEnvIgnored() {
-			fmt.Println("No .env file detected")
+			fmt.Println("no .env file detected")
 		}
-		return errors.New("No database defined")
+		return errors.New("no database defined")
 	}
 
 	if DB.Username == "" {
-		return errors.New("No database user defined")
+		return errors.New("no database user defined")
 	}
 
 	// MySQLPDODatabase, MySQLDatabase, MSSQLDatabase, PostgreSQLDatabase
 	if DB.Type == "" || strings.Contains(strings.ToLower(DB.Type), "mysql") {
 		DB.Type = "MySQL"
 	} else {
-		return fmt.Errorf("Database %s not supported", DB.Type)
+		return fmt.Errorf("database %s not supported", DB.Type)
 	}
 
 	return nil
@@ -95,7 +94,7 @@ func findConfig(dir string) (configFile, error) {
 		return r, nil
 	}
 
-	return r, errors.New("Config not found")
+	return r, errors.New("config not found")
 }
 
 // Extract variables from the system environment if set
@@ -136,7 +135,7 @@ func dotEnvIgnored() bool {
 
 // Extracts from a _ss_environment.php file
 func setFromSsEnvironmentFile(file string) error {
-	b, err := ioutil.ReadFile(filepath.Clean(file))
+	b, err := os.ReadFile(filepath.Clean(file))
 	if err != nil {
 		return err
 	}
@@ -206,5 +205,5 @@ func dbChooseName(v string) string {
 		f = path.Dir(f)
 	}
 
-	return strings.Replace(fmt.Sprintf("SS_%s", path.Base(f)), ".", "", -1)
+	return strings.ReplaceAll(fmt.Sprintf("SS_%s", path.Base(f)), ".", "")
 }

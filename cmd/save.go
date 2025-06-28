@@ -22,7 +22,7 @@ var saveCmd = &cobra.Command{
 		}
 
 		if app.OnlyAssets && app.OnlyDB {
-			return errors.New("You cannot use --assets and --db flags together")
+			return errors.New("you cannot use --assets and --db flags together")
 		}
 
 		tmpDir := app.GetTempDir()
@@ -49,7 +49,7 @@ var saveCmd = &cobra.Command{
 			} else if utils.IsDir(path.Join(app.ProjectRoot, "public", "assets")) {
 				assetsDir = app.RealPath(path.Join(app.ProjectRoot, "public", "assets"))
 			} else {
-				return errors.New("Could not locate assets directory")
+				return errors.New("could not locate assets directory")
 			}
 			assetsFile := path.Join(tmpDir, "assets.tar.gz")
 			app.AddTempFile(assetsFile)

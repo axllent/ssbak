@@ -42,7 +42,7 @@ func Execute() {
 
 		// Clean up temporary files on error, don't print any cleanup errors
 		// as they would have already been returned above
-		app.Cleanup() // #nosec
+		_ = app.Cleanup() // #nosec
 
 		// detect if subcommand is valid
 		help := "\nSee: `ssbak -h` for help"
@@ -61,6 +61,9 @@ func Execute() {
 }
 
 func init() {
+	// hide autocompletion
+	rootCmd.CompletionOptions.HiddenDefaultCmd = true
+
 	// hide the `help` command
 	rootCmd.SetHelpCommand(&cobra.Command{
 		Hidden: true,

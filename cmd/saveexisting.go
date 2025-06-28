@@ -23,15 +23,15 @@ var saveexistingCmd = &cobra.Command{
 		assetsDir, _ := cmd.Flags().GetString("assets")
 
 		if sqlFile == "" && assetsDir == "" {
-			return errors.New("You must specify either --db or --assets, or both")
+			return errors.New("you must specify either --db or --assets, or both")
 		}
 
 		if sqlFile != "" && !utils.IsFile(sqlFile) {
-			return fmt.Errorf("Database file '%s' does not exist", sqlFile)
+			return fmt.Errorf("database file '%s' does not exist", sqlFile)
 		}
 
 		if assetsDir != "" && !utils.IsDir(assetsDir) {
-			return fmt.Errorf("Assets directory '%s' does not exist", assetsDir)
+			return fmt.Errorf("assets directory '%s' does not exist", assetsDir)
 		}
 
 		tmpDir := app.GetTempDir()

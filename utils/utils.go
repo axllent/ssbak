@@ -98,10 +98,10 @@ func GzipFile(file, output string) error {
 	}()
 
 	buf := bufio.NewWriter(outFile)
-	defer buf.Flush()
+	defer func() { _ = buf.Flush() }()
 
 	gz := gzip.NewWriter(buf)
-	defer gz.Close()
+	defer func() { _ = gz.Close() }()
 
 	inSize, _ := CalcSize(file)
 	app.Log(fmt.Sprintf("Compressing '%s' (%s) to '%s'", file, ByteToHr(inSize), output))
