@@ -6,8 +6,8 @@ toolchain go1.24.1
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
-	github.com/axllent/ghru/v2 v2.0.0
-	github.com/go-sql-driver/mysql v1.9.2
+	github.com/axllent/ghru/v2 v2.0.1
+	github.com/go-sql-driver/mysql v1.9.3
 	github.com/joho/godotenv v1.5.1
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.9.0
