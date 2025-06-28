@@ -102,7 +102,7 @@ func ExtractSSPak(sspakFile, outDir string) error {
 // and an assets archive
 func CreateSSPak(sspakFile string, files []string) error {
 	if len(files) == 0 {
-		return errors.New("No files to compress")
+		return errors.New("no files to compress")
 	}
 
 	app.Log(fmt.Sprintf("Creating SSPak archive `%s`", sspakFile))
@@ -124,7 +124,7 @@ func CreateSSPak(sspakFile string, files []string) error {
 
 	file, err := os.Create(path.Clean(sspakFile))
 	if err != nil {
-		return fmt.Errorf("Could not create '%s': %s", sspakFile, err.Error())
+		return fmt.Errorf("could not create '%s': %s", sspakFile, err.Error())
 	}
 
 	defer func() {
@@ -134,11 +134,11 @@ func CreateSSPak(sspakFile string, files []string) error {
 	}()
 
 	tarWriter := tar.NewWriter(file)
-	defer tarWriter.Close()
+	defer func() { _ = tarWriter.Close() }()
 
 	for _, file := range files {
 		if err := addFileToTarWriter(filepath.Base(file), file, tarWriter); err != nil {
-			return fmt.Errorf("Could not add '%s' to '%s': %s", file, sspakFile, err.Error())
+			return fmt.Errorf("could not add '%s' to '%s': %s", file, sspakFile, err.Error())
 		}
 	}
 
@@ -151,7 +151,7 @@ func CreateSSPak(sspakFile string, files []string) error {
 func addFileToTarWriter(fileName, filePath string, tarWriter *tar.Writer) error {
 	file, err := os.Open(filepath.Clean(filePath))
 	if err != nil {
-		return fmt.Errorf("Could not open '%s': %s", filePath, err.Error())
+		return fmt.Errorf("could not open '%s': %s", filePath, err.Error())
 	}
 
 	defer func() {
@@ -162,7 +162,7 @@ func addFileToTarWriter(fileName, filePath string, tarWriter *tar.Writer) error 
 
 	stat, err := file.Stat()
 	if err != nil {
-		return fmt.Errorf("Could not get stat for '%s': %s", filePath, err.Error())
+		return fmt.Errorf("could not get stat for '%s': %s", filePath, err.Error())
 	}
 
 	header := &tar.Header{
@@ -174,12 +174,12 @@ func addFileToTarWriter(fileName, filePath string, tarWriter *tar.Writer) error 
 
 	err = tarWriter.WriteHeader(header)
 	if err != nil {
-		return fmt.Errorf("Could not write header '%s': %s", filePath, err.Error())
+		return fmt.Errorf("could not write header '%s': %s", filePath, err.Error())
 	}
 
 	_, err = io.Copy(tarWriter, file)
 	if err != nil {
-		return fmt.Errorf("Could not copy the file '%s' data to archive: %s", filePath, err.Error())
+		return fmt.Errorf("could not copy the file '%s' data to archive: %s", filePath, err.Error())
 	}
 
 	return nil

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/axllent/ghru/v2"
 	"github.com/axllent/ssbak/app"
-	"github.com/axllent/ssbak/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -27,21 +27,46 @@ var versionCmd = &cobra.Command{
 	Long:  `Displays the ssbak version & update information.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 
+		conf := ghru.Config{
+			Repo:           "axllent/ssbak",
+			ArchiveName:    "ssbak_{{.OS}}_{{.Arch}}",
+			BinaryName:     "ssbak",
+			CurrentVersion: Version,
+		}
+
 		update, _ := cmd.Flags().GetBool("update")
 
 		if update {
-			return updateApp()
+			// Update the app
+			rel, err := conf.SelfUpdate()
+			if err != nil {
+				fmt.Println(err.Error())
+				os.Exit(1)
+			}
+
+			fmt.Printf("Updated %s to version %s\n", os.Args[0], rel.Tag)
+			return nil
 		}
 
 		fmt.Printf("Version: %s\n", Version)
-		latest, _, _, err := utils.GithubLatest(Repo, RepoBinaryName)
-		if err == nil && utils.GreaterThan(latest, Version) {
-			fmt.Printf(
-				"Update available: %s\nRun `%s version -u` to update (requires read/write access to install directory).\n",
-				latest,
-				os.Args[0],
-			)
+
+		release, err := conf.Latest()
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
 		}
+
+		// The latest version is the same version
+		if release.Tag == Version {
+			return nil
+		}
+
+		// A newer release is available
+		fmt.Printf(
+			"Update available: %s\nRun `%s version -u` to update (requires read/write access to install directory).\n",
+			release.Tag,
+			os.Args[0],
+		)
 
 		return nil
 	},
@@ -55,13 +80,4 @@ func init() {
 
 	versionCmd.Flags().
 		BoolVarP(&app.Verbose, "verbose", "v", false, "verbose output")
-}
-
-func updateApp() error {
-	rel, err := utils.GithubUpdate(Repo, RepoBinaryName, Version)
-	if err != nil {
-		return err
-	}
-	fmt.Printf("Updated %s to version %s\n", os.Args[0], rel)
-	return nil
 }
