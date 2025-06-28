@@ -38,7 +38,7 @@ func AssetsToTarGz(assetsDir, gzipFile string) error {
 func AssetsFromTarGz(tmpDir, assetsBase string) error {
 	in := filepath.Join(tmpDir, "assets.tar.gz")
 	if !IsFile(in) {
-		return fmt.Errorf("File '%s' does not exist", in)
+		return fmt.Errorf("file '%s' does not exist", in)
 	}
 
 	inSize, _ := CalcSize(in)

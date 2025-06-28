@@ -87,7 +87,7 @@ func RunDump(t testing.TB, data *mysqldump.Data) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err, "an error was not expected when opening a stub database connection")
 
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	data.Connection = db
 	showTablesRows := sqlmock.NewRows([]string{"Tables_in_Testdb"}).
@@ -151,7 +151,7 @@ func TestNoLockOk(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err, "an error was not expected when opening a stub database connection")
 
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	data.Connection = db
 	showTablesRows := sqlmock.NewRows([]string{"Tables_in_Testdb"}).

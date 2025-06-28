@@ -38,26 +38,29 @@ func MySQLDumpToGz(gzipFile string) error {
 
 	f, err := os.Create(path.Clean(gzipFile))
 	if err != nil {
-		return fmt.Errorf("Error creating database backup: %s", err.Error())
+		return fmt.Errorf("error creating database backup: %s", err.Error())
 	}
 
 	defer func() {
 		if err := f.Close(); err != nil {
-			fmt.Printf("Error closing file: %s\n", err)
+			fmt.Printf("error closing file: %s\n", err)
 		}
 	}()
 
 	// Open connection to database
 	db, err := sql.Open("mysql", config.FormatDSN())
 	if err != nil {
-		return fmt.Errorf("Error opening database: %s", err.Error())
+		return fmt.Errorf("error opening database: %s", err.Error())
 	}
 
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	gzw := gzip.NewWriter(f)
-	defer gzw.Close()
-	defer gzw.Flush()
+
+	defer func() {
+		_ = gzw.Close()
+		_ = gzw.Flush()
+	}()
 
 	app.Log(fmt.Sprintf("Dumping database to '%s'", gzipFile))
 
@@ -69,7 +72,7 @@ func MySQLDumpToGz(gzipFile string) error {
 
 	// Dump database to file
 	if err = dumper.Dump(); err != nil {
-		return fmt.Errorf("Error dumping: %s", err.Error())
+		return fmt.Errorf("error dumping: %s", err.Error())
 	}
 
 	outSize, _ := CalcSize(gzipFile)
@@ -87,10 +90,10 @@ func MySQLCreateDB(dropDatabase bool) error {
 	// Open connection to database
 	db, err := sql.Open("mysql", config.FormatDSN())
 	if err != nil {
-		return fmt.Errorf("Error opening database: %s", err.Error())
+		return fmt.Errorf("error opening database: %s", err.Error())
 	}
 
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	createMsg := `Creating database (if not exists)`
 
@@ -112,7 +115,7 @@ func MySQLCreateDB(dropDatabase bool) error {
 // streaming the gz file to the mysql cli.
 func MySQLLoadFromGz(gzipSQLFile string) error {
 	if !IsFile(gzipSQLFile) {
-		return fmt.Errorf("File '%s' does not exist", gzipSQLFile)
+		return fmt.Errorf("file '%s' does not exist", gzipSQLFile)
 	}
 
 	f, err := os.Open(filepath.Clean(gzipSQLFile))
@@ -122,7 +125,7 @@ func MySQLLoadFromGz(gzipSQLFile string) error {
 
 	defer func() {
 		if err := f.Close(); err != nil {
-			fmt.Printf("Error closing file: %s\n", err)
+			fmt.Printf("error closing file: %s\n", err)
 		}
 	}()
 
@@ -130,17 +133,17 @@ func MySQLLoadFromGz(gzipSQLFile string) error {
 	if err != nil {
 		return err
 	}
-	defer reader.Close()
+	defer func() { _ = reader.Close() }()
 
 	config := mysqlConfig()
 
 	// Open connection to database
 	db, err := sql.Open("mysql", config.FormatDSN())
 	if err != nil {
-		return fmt.Errorf("Error opening database: %s", err.Error())
+		return fmt.Errorf("error opening database: %s", err.Error())
 	}
 
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	fileScanner := bufio.NewScanner(reader)
 	fileScanner.Split(bufio.ScanLines)

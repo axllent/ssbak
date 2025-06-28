@@ -21,7 +21,7 @@ var extractCmd = &cobra.Command{
 		}
 
 		if app.OnlyAssets && app.OnlyDB {
-			return errors.New("You cannot use --assets and --db flags together")
+			return errors.New("you cannot use --assets and --db flags together")
 		}
 
 		if err := utils.MkDirIfNotExists(outputDir); err != nil {

@@ -314,7 +314,7 @@ func extract(filePath string, directory string) error {
 	if err != nil {
 		return err
 	}
-	defer gzipReader.Close()
+	defer func() { _ = gzipReader.Close() }()
 
 	tarReader := tar.NewReader(gzipReader)
 
@@ -358,7 +358,7 @@ func extract(filePath string, directory string) error {
 
 			// set file ownership (if allowed)
 			// Chtimes() && Chmod() only set after once extraction is complete
-			os.Chown(filename, header.Uid, header.Gid) // #nosec
+			_ = os.Chown(filename, header.Uid, header.Gid) // #nosec
 
 			// add directory info to slice to process afterwards
 			postExtraction = append(postExtraction, DirInfo{filename, header})
@@ -407,9 +407,9 @@ func extract(filePath string, directory string) error {
 		}
 
 		// set file permissions, timestamps & uid/gid
-		os.Chmod(filename, os.FileMode(header.Mode))            // #nosec
-		os.Chtimes(filename, header.AccessTime, header.ModTime) // #nosec
-		os.Chown(filename, header.Uid, header.Gid)              // #nosec
+		_ = os.Chmod(filename, os.FileMode(header.Mode))            // #nosec
+		_ = os.Chtimes(filename, header.AccessTime, header.ModTime) // #nosec
+		_ = os.Chown(filename, header.Uid, header.Gid)              // #nosec
 	}
 
 	if len(postExtraction) > 0 {
@@ -417,8 +417,8 @@ func extract(filePath string, directory string) error {
 		app.Log(fmt.Sprintf("Setting timestamps for %d extracted directories", len(postExtraction)))
 
 		for _, dir := range postExtraction {
-			os.Chtimes(dir.Path, dir.Header.AccessTime, dir.Header.ModTime) // #nosec
-			os.Chmod(dir.Path, dir.Header.FileInfo().Mode().Perm())         // #nosec
+			_ = os.Chtimes(dir.Path, dir.Header.AccessTime, dir.Header.ModTime) // #nosec
+			_ = os.Chmod(dir.Path, dir.Header.FileInfo().Mode().Perm())         // #nosec
 		}
 	}
 

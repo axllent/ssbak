@@ -66,7 +66,7 @@ func (data *Data) Close() error {
 	}()
 
 	if out, ok := data.Out.(io.Closer); ok {
-		out.Close()
+		_ = out.Close()
 	}
 
 	return data.Connection.Close()
@@ -78,7 +78,7 @@ func exists(p string) (bool, os.FileInfo) {
 		return false, nil
 	}
 
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	fi, err := f.Stat()
 	if err != nil {

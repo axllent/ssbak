@@ -35,7 +35,7 @@ func TestGetTablesOk(t *testing.T) {
 	data, mock, err := getMockData()
 	assert.NoError(t, err, "an error was not expected when opening a stub database connection")
 
-	defer data.Close()
+	defer func() { _ = data.Close() }()
 
 	rows := sqlmock.NewRows([]string{"Tables_in_Testdb"}).
 		AddRow("Test_Table_1").
@@ -56,7 +56,7 @@ func TestIgnoreTablesOk(t *testing.T) {
 	data, mock, err := getMockData()
 	assert.NoError(t, err, "an error was not expected when opening a stub database connection")
 
-	defer data.Close()
+	defer func() { _ = data.Close() }()
 
 	rows := sqlmock.NewRows([]string{"Tables_in_Testdb"}).
 		AddRow("Test_Table_1").
@@ -79,7 +79,7 @@ func TestGetTablesNil(t *testing.T) {
 	data, mock, err := getMockData()
 	assert.NoError(t, err, "an error was not expected when opening a stub database connection")
 
-	defer data.Close()
+	defer func() { _ = data.Close() }()
 
 	rows := sqlmock.NewRows([]string{"Tables_in_Testdb"}).
 		AddRow("Test_Table_1").
@@ -101,7 +101,7 @@ func TestGetServerVersionOk(t *testing.T) {
 	data, mock, err := getMockData()
 	assert.NoError(t, err, "an error was not expected when opening a stub database connection")
 
-	defer data.Close()
+	defer func() { _ = data.Close() }()
 
 	rows := sqlmock.NewRows([]string{"Version()"}).
 		AddRow("test_version")
@@ -122,7 +122,7 @@ func TestCreateTableSQLOk(t *testing.T) {
 	data, mock, err := getMockData()
 	assert.NoError(t, err, "an error was not expected when opening a stub database connection")
 
-	defer data.Close()
+	defer func() { _ = data.Close() }()
 
 	// Add expectation for table type check
 	mock.ExpectQuery(`SELECT table_type FROM information_schema.tables WHERE table_name = \?`).WithArgs("Test_Table").WillReturnRows(sqlmock.NewRows([]string{"table_type"}).AddRow("BASE TABLE"))
@@ -152,7 +152,7 @@ func TestCreateTableRowValues(t *testing.T) {
 	data, mock, err := getMockData()
 	assert.NoError(t, err, "an error was not expected when opening a stub database connection")
 
-	defer data.Close()
+	defer func() { _ = data.Close() }()
 
 	rows := sqlmock.NewRows([]string{"id", "email", "name"}).
 		AddRow(1, "test@test.de", "Test Name 1").
@@ -179,7 +179,7 @@ func TestCreateTableValuesSteam(t *testing.T) {
 	data, mock, err := getMockData()
 	assert.NoError(t, err, "an error was not expected when opening a stub database connection")
 
-	defer data.Close()
+	defer func() { _ = data.Close() }()
 
 	rows := sqlmock.NewRows([]string{"id", "email", "name"}).
 		AddRow(1, "test@test.de", "Test Name 1").
@@ -204,7 +204,7 @@ func TestCreateTableValuesSteamSmallPackets(t *testing.T) {
 	data, mock, err := getMockData()
 	assert.NoError(t, err, "an error was not expected when opening a stub database connection")
 
-	defer data.Close()
+	defer func() { _ = data.Close() }()
 
 	rows := sqlmock.NewRows([]string{"id", "email", "name"}).
 		AddRow(1, "test@test.de", "Test Name 1").
@@ -230,7 +230,7 @@ func TestCreateTableAllValuesWithNil(t *testing.T) {
 	data, mock, err := getMockData()
 	assert.NoError(t, err, "an error was not expected when opening a stub database connection")
 
-	defer data.Close()
+	defer func() { _ = data.Close() }()
 
 	rows := sqlmock.NewRows([]string{"id", "email", "name"}).
 		AddRow(1, nil, "Test Name 1").
@@ -265,7 +265,7 @@ func TestCreateTableOk(t *testing.T) {
 	data, mock, err := getMockData()
 	assert.NoError(t, err, "an error was not expected when opening a stub database connection")
 
-	defer data.Close()
+	defer func() { _ = data.Close() }()
 
 	// Add expectation for table type check
 	mock.ExpectQuery(`SELECT table_type FROM information_schema.tables WHERE table_name = \?`).WithArgs("Test_Table").WillReturnRows(sqlmock.NewRows([]string{"table_type"}).AddRow("BASE TABLE"))
@@ -329,7 +329,7 @@ func TestCreateTableOkSmallPackets(t *testing.T) {
 	data, mock, err := getMockData()
 	assert.NoError(t, err, "an error was not expected when opening a stub database connection")
 
-	defer data.Close()
+	defer func() { _ = data.Close() }()
 
 	// Add expectation for table type check
 	mock.ExpectQuery(`SELECT table_type FROM information_schema.tables WHERE table_name = \?`).WithArgs("Test_Table").WillReturnRows(sqlmock.NewRows([]string{"table_type"}).AddRow("BASE TABLE"))

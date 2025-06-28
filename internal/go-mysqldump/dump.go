@@ -288,7 +288,7 @@ func (data *Data) GetTables() ([]string, error) {
 	if err != nil {
 		return tables, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	for rows.Next() {
 		var table sql.NullString
@@ -444,7 +444,7 @@ func (table *Table) Next() bool {
 			return false
 		}
 	} else {
-		table.rows.Close()
+		_ = table.rows.Close()
 		table.rows = nil
 
 		return false

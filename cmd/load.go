@@ -24,7 +24,7 @@ var loadCmd = &cobra.Command{
 		}
 
 		if app.OnlyAssets && app.OnlyDB {
-			return errors.New("You cannot use --assets and --db flags together")
+			return errors.New("you cannot use --assets and --db flags together")
 		}
 
 		app.ProjectRoot = "."
