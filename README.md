@@ -4,9 +4,9 @@
 ![Build status](https://github.com/axllent/ssbak/actions/workflows/build-release.yml/badge.svg)
 ![CodeQL](https://github.com/axllent/ssbak/actions/workflows/codeql-analysis.yml/badge.svg)
 
-**SSBak** is a backup & restore tool for [Silverstripe](https://www.silverstripe.org) websites, written in Go. It backs up the assets and database, and is heavily based on (and largely compatible with) [SSPak](https://github.com/silverstripe/sspak). Unlike SSPak however, it does not require PHP, mysql client, tar, gzip etc to be installed as this is all handled directly within SSBak.
+**SSBak** is a backup & restore tool for [Silverstripe](https://www.silverstripe.org) websites, written in Go. It backs up the assets and database, and is heavily based on (and largely compatible with) [SSPak](https://github.com/silverstripe/sspak). Unlike SSPak however, it does not require PHP, MySQL client, tar, gzip etc to be installed as this is all handled directly within SSBak.
 
-It currently supports Silverstripe 3, 4 & 5.
+It currently supports Silverstripe 3, 4, 5 & 6.
 
 ### Why rewrite SSPak?
 
@@ -18,13 +18,14 @@ More recently I experienced issues of SSPak saving empty databases due to issues
 
 ## Features
 
-SSBak is a self-contained static binary written in Go, and does not use third part utilities such as the MySQL client, tar, gzip or even PHP. It is fast, memory efficient, and provides the following features:
+SSBak is a self-contained static binary written in Go, and does not use third-party utilities such as the MySQL client, tar, gzip or even PHP. It is fast, memory efficient, and provides the following features:
 
 - Compatible with the standard `*.sspak` file format (non-executable tar files).
 - Create and restore database and/or assets regardless of size.
 - Optionally create or restore without resampled images (`--ignore-resampled`). Note: this skips most common image manipulations except for `ResizedImages` which are usually generated for HTMLText and cannot be regenerated "on the fly".
 - SSBak does not use PHP at all (see [limitations](#limitations)).
-- Multi-platform static binaries (Linux, Mac & Windows).
+- SSBak does not use `mysqldump` or `mysql` command-line utilities, functionality is built in.
+- Multi-platform static binaries (Linux, macOS and Windows).
 - Checks temporary and output locations have sufficient storage space **before** doing operations (Linux / Mac only).
 - Optional verbose output to see what it is doing.
 - Shell completion (see `ssbak completion -h`).
@@ -56,7 +57,7 @@ Use "ssbak [command] --help" for more information about a command.
 
 ## Installation & requirements
 
-Download a suitable binary for your architecture (see [releases](https://github.com/axllent/ssbak/releases/latest)), extract the make it executable and place it in your $PATH. You can optionally rename "ssbak" to "sspak" to use as a drop-in replacement for SSPak (see [limitations](#limitations)).
+Download a suitable binary for your architecture (see [releases](https://github.com/axllent/ssbak/releases/latest)), extract it, make it executable, and place it in your $PATH. You can optionally rename "ssbak" to "sspak" to use as a drop-in replacement for SSPak (see [limitations](#limitations)).
 
 If you need to programmatically install ssbak (amd64) to `/usr/local/bin/ssbak` you could:
 
@@ -85,9 +86,9 @@ TMPDIR="/drive/with/more/space" ssbak save . website.sspak
 
 ## Limitations
 
-SSBak is designed as a database & asset backup & restore tool, and is largely drop-in replacement for the existing SSPak tool. There are however a few differences:
+Although SSBak is designed as a drop-in replacement for SSPak, there are a few differences:
 
-- SSBak currently only supports MySQL databases.
+- SSBak currently only supports MySQL/MariaDB databases.
 - SSBak is written in Go which does not have any PHP-parsing capabilities (it uses regular expressions to extract the config). For all database dump & restore operations it requires either a `.env` or a `_ss_environment.php` file containing `SS_DATABASE_SERVER`, `SS_DATABASE_USERNAME`, `SS_DATABASE_PASSWORD` & `SS_DATABASE_NAME` in the **root** or parent directory of your website folder. You can however also export the required variables (see [Environment settings](#environment-settings)).
 - It does not support remote ssh storage, `git-remote` / `install`, or CSV import/export features from SSPak.
 
@@ -97,4 +98,4 @@ Issues and vulnerabilities should be reported via the [Github issues tracker](ht
 
 ## Contributing
 
-Code contributions should be supplied in the form of a merge request, and forked from the `develop` branch.
+Code contributions should be supplied in the form of a pull request, and forked from the `develop` branch.
