@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/aliakseiz/go-mysqldump"
 	"github.com/axllent/ssbak/app"
+	"github.com/axllent/ssbak/internal/go-mysqldump"
 	"github.com/go-sql-driver/mysql"
 )
 
