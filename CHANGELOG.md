@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.1]
+
+- Revert back to using fixed aliakseiz/go-mysqldump module
+- Update Go dependencies
+
 ## [1.2.0]
 
 - Switch to ghru for self-updating and version checks
