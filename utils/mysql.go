@@ -148,7 +148,8 @@ func MySQLLoadFromGz(gzipSQLFile string) error {
 	fileScanner := bufio.NewScanner(reader)
 	fileScanner.Split(bufio.ScanLines)
 	cBuffer := make([]byte, 0, bufio.MaxScanTokenSize)
-	fileScanner.Buffer(cBuffer, bufio.MaxScanTokenSize*50) // Otherwise long lines crash the scanner
+	// Increase buffer to handle very long lines to prevent crashes - approx 32MB
+	fileScanner.Buffer(cBuffer, bufio.MaxScanTokenSize*500)
 
 	app.Log(fmt.Sprintf("Importing database to '%s'", app.DB.Name))
 
