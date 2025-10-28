@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.2]
+
+- Increase buffer size in MySQLLoadFromGz to handle very long lines and prevent crashes
+
 ## [1.2.1]
 
 - Revert back to using fixed aliakseiz/go-mysqldump module
