@@ -6,7 +6,7 @@ import (
 
 	"github.com/axllent/ssbak/app"
 	"github.com/axllent/ssbak/internal/sspak"
-	"github.com/axllent/ssbak/utils"
+	"github.com/axllent/ssbak/internal/utils"
 	"github.com/spf13/cobra"
 )
 

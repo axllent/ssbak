@@ -12,7 +12,7 @@ import (
 
 	"github.com/aliakseiz/go-mysqldump"
 	"github.com/axllent/ssbak/app"
-	"github.com/axllent/ssbak/utils"
+	"github.com/axllent/ssbak/internal/utils"
 	"github.com/go-sql-driver/mysql"
 	"github.com/klauspost/compress/zstd"
 )

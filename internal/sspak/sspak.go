@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 
 	"github.com/axllent/ssbak/app"
-	"github.com/axllent/ssbak/utils"
+	"github.com/axllent/ssbak/internal/utils"
 )
 
 var (

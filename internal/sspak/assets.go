@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/axllent/ssbak/app"
-	"github.com/axllent/ssbak/utils"
+	"github.com/axllent/ssbak/internal/utils"
 	"github.com/klauspost/compress/zstd"
 )
 
