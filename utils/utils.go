@@ -1,14 +1,9 @@
 package utils
 
 import (
-	"bufio"
-	"compress/gzip"
 	"fmt"
-	"io"
 	"os"
-	"path"
 	"path/filepath"
-	"strings"
 
 	"github.com/axllent/ssbak/app"
 )
@@ -16,7 +11,7 @@ import (
 // IsFile returns if a path is a file
 func IsFile(path string) bool {
 	info, err := os.Stat(path)
-	if os.IsNotExist(err) || !info.Mode().IsRegular() {
+	if err != nil || !info.Mode().IsRegular() {
 		return false
 	}
 
@@ -26,7 +21,7 @@ func IsFile(path string) bool {
 // IsDir returns if a path is a directory
 func IsDir(path string) bool {
 	info, err := os.Stat(path)
-	if os.IsNotExist(err) || !info.IsDir() {
+	if err != nil || !info.IsDir() {
 		return false
 	}
 
@@ -71,61 +66,4 @@ func ByteToHr(b int64) string {
 	}
 	return fmt.Sprintf("%.1f%ciB",
 		float64(b)/float64(div), "KMGTPE"[exp])
-}
-
-// GzipFile will compress an existing file with gzip and save it was output
-func GzipFile(file, output string) error {
-	src, err := os.Open(filepath.Clean(file))
-	if err != nil {
-		return err
-	}
-
-	defer func() {
-		if err := src.Close(); err != nil {
-			fmt.Printf("Error closing file: %s\n", err)
-		}
-	}()
-
-	outFile, err := os.Create(path.Clean(output))
-	if err != nil {
-		return err
-	}
-
-	defer func() {
-		if err := outFile.Close(); err != nil {
-			fmt.Printf("Error closing file: %s\n", err)
-		}
-	}()
-
-	buf := bufio.NewWriter(outFile)
-	defer func() { _ = buf.Flush() }()
-
-	gz := gzip.NewWriter(buf)
-	defer func() { _ = gz.Close() }()
-
-	inSize, _ := CalcSize(file)
-	app.Log(fmt.Sprintf("Compressing '%s' (%s) to '%s'", file, ByteToHr(inSize), output))
-
-	_, err = io.Copy(gz, src)
-
-	outSize, _ := CalcSize(output)
-	app.Log(fmt.Sprintf("Wrote '%s' (%s)", output, ByteToHr(outSize)))
-
-	return err
-}
-
-// SkipResampled detects whether the assets is a resampled image
-func skipResampled(filePath string) bool {
-	if !app.IgnoreResampled {
-		return false
-	}
-
-	for _, r := range app.ResampledRegex {
-		// Silverstripe 5 generates thumbnails for CMS previews by default with `__FitMaxWzM1MiwyNjRd`
-		if !strings.Contains(filePath, "__FitMaxWzM1MiwyNjRd.") && r.MatchString(filePath) {
-			return true
-		}
-	}
-
-	return false
 }

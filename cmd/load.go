@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"path"
-	"path/filepath"
 
 	"github.com/axllent/ssbak/app"
+	"github.com/axllent/ssbak/internal/sspak"
 	"github.com/axllent/ssbak/utils"
 	"github.com/spf13/cobra"
 )
@@ -32,43 +32,31 @@ var loadCmd = &cobra.Command{
 			app.ProjectRoot = args[1]
 		}
 
-		var assetsBase string
-		if utils.IsDir(path.Join(app.ProjectRoot, "public")) {
-			assetsBase = path.Join(app.ProjectRoot, "public")
-		} else {
-			assetsBase = app.ProjectRoot
-		}
-
-		tmpDir := app.GetTempDir()
-
-		if err := utils.ExtractSSPak(args[0], tmpDir); err != nil {
+		archive, err := sspak.Open(args[0])
+		if err != nil {
 			return err
 		}
 
-		gzipSQLFile := filepath.Join(tmpDir, "database.sql.gz")
-		app.AddTempFile(gzipSQLFile)
-		assetsFile := filepath.Join(tmpDir, "assets.tar.gz")
-		app.AddTempFile(assetsFile)
-
-		if utils.IsFile(gzipSQLFile) && !app.OnlyAssets {
+		if archive.DatabaseFile != "" && !app.OnlyAssets {
 			if err := app.BootstrapEnv(app.ProjectRoot); err != nil {
 				return err
 			}
 
 			dropDatabase, _ := cmd.Flags().GetBool("drop-db")
-			// use map to determine which database function to use
-			if err := utils.DBCreateWrapper[app.DB.Type](dropDatabase); err != nil {
-				return err
-			}
-
-			// use map to determine which database function to use
-			if err := utils.DBLoadWrapper[app.DB.Type](gzipSQLFile); err != nil {
+			if err := archive.LoadDatabase(dropDatabase); err != nil {
 				return err
 			}
 		}
 
-		if utils.IsFile(assetsFile) && !app.OnlyDB {
-			if err := utils.AssetsFromTarGz(tmpDir, assetsBase); err != nil {
+		if archive.AssetsFile != "" && !app.OnlyDB {
+			var assetsBase string
+			if utils.IsDir(path.Join(app.ProjectRoot, "public")) {
+				assetsBase = path.Join(app.ProjectRoot, "public")
+			} else {
+				assetsBase = app.ProjectRoot
+			}
+
+			if err := archive.LoadAssets(assetsBase); err != nil {
 				return err
 			}
 		}

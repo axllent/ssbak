@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/axllent/ssbak/app"
+	"github.com/axllent/ssbak/internal/sspak"
 	"github.com/axllent/ssbak/utils"
 	"github.com/spf13/cobra"
 )
@@ -28,7 +29,7 @@ var extractCmd = &cobra.Command{
 			return err
 		}
 
-		return utils.ExtractSSPak(args[0], outputDir)
+		return sspak.Extract(args[0], outputDir)
 	},
 }
 

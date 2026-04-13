@@ -42,7 +42,7 @@ func Execute() {
 
 		// Clean up temporary files on error, don't print any cleanup errors
 		// as they would have already been returned above
-		_ = app.Cleanup() // #nosec
+		_ = app.Cleanup()
 
 		// detect if subcommand is valid
 		help := "\nSee: `ssbak -h` for help"

@@ -3,16 +3,15 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"path"
-	"path/filepath"
 
 	"github.com/axllent/ssbak/app"
+	"github.com/axllent/ssbak/internal/sspak"
 	"github.com/axllent/ssbak/utils"
 	"github.com/spf13/cobra"
 )
 
-// saveexistingCmd represents the saveexisting command
-var saveexistingCmd = &cobra.Command{
+// saveExistingCmd represents the saveexisting command
+var saveExistingCmd = &cobra.Command{
 	Use:     "saveexisting <sspak>",
 	Short:   "Create .sspak backup from existing database SQL dump and/or assets",
 	Long:    `Create .sspak backup from an existing database SQL dump and/or assets folder.`,
@@ -34,44 +33,36 @@ var saveexistingCmd = &cobra.Command{
 			return fmt.Errorf("assets directory '%s' does not exist", assetsDir)
 		}
 
-		tmpDir := app.GetTempDir()
-
-		sspakFiles := []string{}
+		archive := sspak.New()
 
 		if sqlFile != "" {
-			gzipSQL := filepath.Join(tmpDir, "database.sql.gz")
-			app.AddTempFile(gzipSQL)
-
-			if err := utils.GzipFile(sqlFile, gzipSQL); err != nil {
+			if err := archive.AddDatabaseFromFile(sqlFile); err != nil {
 				return err
 			}
-			sspakFiles = append(sspakFiles, gzipSQL)
 		}
 
 		if assetsDir != "" {
-			assetsFile := path.Join(tmpDir, "assets.tar.gz")
-			app.AddTempFile(assetsFile)
-
-			if err := utils.AssetsToTarGz(assetsDir, assetsFile); err != nil {
+			if err := archive.AddAssets(assetsDir); err != nil {
 				return err
 			}
-
-			sspakFiles = append(sspakFiles, assetsFile)
 		}
 
-		return utils.CreateSSPak(args[0], sspakFiles)
+		return archive.Write(args[0])
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(saveexistingCmd)
+	rootCmd.AddCommand(saveExistingCmd)
 
-	saveexistingCmd.Flags().
+	saveExistingCmd.Flags().
 		StringP("db", "", "", "add an existing .sql file")
 
-	saveexistingCmd.Flags().
+	saveExistingCmd.Flags().
 		StringP("assets", "", "", "add an existing assets directory")
 
-	saveexistingCmd.Flags().
+	saveExistingCmd.Flags().
+		BoolVarP(&sspak.UseZSTD, "zstd", "z", false, "use zstd compression (experimental)")
+
+	saveExistingCmd.Flags().
 		BoolVarP(&app.Verbose, "verbose", "v", false, "verbose output")
 }

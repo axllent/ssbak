@@ -7,6 +7,7 @@ require (
 	github.com/axllent/ghru/v2 v2.2.3
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/joho/godotenv v1.5.1
+	github.com/klauspost/compress v1.18.3
 	github.com/spf13/cobra v1.10.2
 )
 
