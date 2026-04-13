@@ -15,7 +15,7 @@ var extractCmd = &cobra.Command{
 	Short: "Extract .sspak backup",
 	Long:  `Extract the contents of an .sspak backup.`,
 	Args:  cobra.RangeArgs(1, 2),
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(_ *cobra.Command, args []string) error {
 		outputDir := "."
 		if len(args) == 2 {
 			outputDir = args[1]
