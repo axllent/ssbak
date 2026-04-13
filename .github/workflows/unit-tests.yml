@@ -1,11 +1,11 @@
-name: Tests
+name: Unit tests
 
 on:
   workflow_call:
 
 jobs:
   test:
-    name: Unit Tests
+    name: Unit tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -14,5 +14,5 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - name: Run tests
+      - name: Run unit tests
         run: go test -v ./internal/...

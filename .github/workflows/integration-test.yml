@@ -1,4 +1,4 @@
-name: Integration Tests
+name: Integration tests
 
 on:
   push:
@@ -10,7 +10,7 @@ jobs:
     uses: ./.github/workflows/unit-tests.yml
 
   integration-tests:
-    name: Integration Tests (MariaDB)
+    name: Integration tests (MariaDB)
     needs: unit-tests
     runs-on: ubuntu-latest
     services:
