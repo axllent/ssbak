@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.3.0-beta1]
+
+- Add experimental zstd compression support (`--zstd` flag)
+- Implement streaming support for SSPak archives in load functions
+- Add unit and integration tests
+
 ## [1.2.3]
 
 - Fix path handling in extract function to prevent duplicate folder names
