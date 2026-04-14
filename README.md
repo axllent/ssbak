@@ -23,6 +23,7 @@ SSBak is a self-contained static binary written in Go, and does not use third-pa
 - Compatible with the standard `*.sspak` file format (non-executable tar files).
 - Create and restore database and/or assets regardless of size.
 - Optionally create or restore without resampled images (`--ignore-resampled`). Note: this skips most common image manipulations except for `ResizedImages` which are usually generated for HTMLText and cannot be regenerated "on the fly".
+- Experimental zstd compression (instead fg gzip) for faster compression and decompression speeds and better compression ratios (`-z` or `--zstd`). Note: this is not compatible with the legacy SSPak utility and will requires SSBak to extract.
 - SSBak does not use PHP at all (see [limitations](#limitations)).
 - SSBak does not use `mysqldump` or `mysql` command-line utilities, functionality is built in.
 - Multi-platform static binaries (Linux, macOS and Windows).

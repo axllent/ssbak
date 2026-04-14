@@ -14,7 +14,7 @@ var (
 	Verbose bool
 
 	// TempFiles get cleaned up on exit
-	TempFiles []string
+	tempFiles []string
 
 	// TempDir runtime variable can overridden with flags
 	TempDir string
