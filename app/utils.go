@@ -30,12 +30,12 @@ func GetTempDir() string {
 
 // AddTempFile adds a file to the temporary files to clean up
 func AddTempFile(file string) {
-	TempFiles = append(TempFiles, file)
+	tempFiles = append(tempFiles, file)
 }
 
 // Cleanup removes temporary files & directories on exit
 func Cleanup() error {
-	for _, file := range TempFiles {
+	for _, file := range tempFiles {
 		if isFile(file) {
 			if err := os.Remove(file); err != nil {
 				return err
@@ -70,7 +70,7 @@ func mkDirIfNotExists(path string) error {
 // IsFile returns if a path is a file
 func isFile(path string) bool {
 	info, err := os.Stat(path)
-	if os.IsNotExist(err) || !info.Mode().IsRegular() {
+	if err != nil || !info.Mode().IsRegular() {
 		return false
 	}
 
@@ -80,7 +80,7 @@ func isFile(path string) bool {
 // IsDir returns if a path is a directory
 func isDir(path string) bool {
 	info, err := os.Stat(path)
-	if os.IsNotExist(err) || !info.IsDir() {
+	if err != nil || !info.IsDir() {
 		return false
 	}
 

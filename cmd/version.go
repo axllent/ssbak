@@ -25,7 +25,7 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Display the app version & update information",
 	Long:  `Displays the ssbak version & update information.`,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(cmd *cobra.Command, _ []string) error {
 
 		conf := ghru.Config{
 			Repo:           "axllent/ssbak",

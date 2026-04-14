@@ -5,7 +5,8 @@ import (
 	"path"
 
 	"github.com/axllent/ssbak/app"
-	"github.com/axllent/ssbak/utils"
+	"github.com/axllent/ssbak/internal/sspak"
+	"github.com/axllent/ssbak/internal/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -16,7 +17,7 @@ var saveCmd = &cobra.Command{
 	Long:    `Create .sspak archive from a Silverstripe database and/or assets.`,
 	Example: `  ssbak save ./ website.sspak`,
 	Args:    cobra.ExactArgs(2),
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(_ *cobra.Command, args []string) error {
 		if err := app.BootstrapEnv(args[0]); err != nil {
 			return err
 		}
@@ -25,20 +26,12 @@ var saveCmd = &cobra.Command{
 			return errors.New("you cannot use --assets and --db flags together")
 		}
 
-		tmpDir := app.GetTempDir()
-
-		sspakFiles := []string{}
+		archive := sspak.New()
 
 		if !app.OnlyAssets {
-			gzipFile := path.Join(tmpDir, "database.sql.gz")
-			app.AddTempFile(gzipFile)
-
-			// use map to determine which database function to use
-			if err := utils.DBDumpWrapper[app.DB.Type](gzipFile); err != nil {
+			if err := archive.AddDatabase(); err != nil {
 				return err
 			}
-
-			sspakFiles = append(sspakFiles, gzipFile)
 		}
 
 		if !app.OnlyDB {
@@ -51,17 +44,13 @@ var saveCmd = &cobra.Command{
 			} else {
 				return errors.New("could not locate assets directory")
 			}
-			assetsFile := path.Join(tmpDir, "assets.tar.gz")
-			app.AddTempFile(assetsFile)
 
-			if err := utils.AssetsToTarGz(assetsDir, assetsFile); err != nil {
+			if err := archive.AddAssets(assetsDir); err != nil {
 				return err
 			}
-
-			sspakFiles = append(sspakFiles, assetsFile)
 		}
 
-		return utils.CreateSSPak(args[1], sspakFiles)
+		return archive.Write(args[1])
 	},
 }
 
@@ -75,7 +64,10 @@ func init() {
 		BoolVarP(&app.OnlyAssets, "assets", "", false, "only save the assets")
 
 	saveCmd.Flags().
-		BoolVarP(&app.IgnoreResampled, "ignore-resampled", "i", false, "ignore most resampled images (experimental)")
+		BoolVarP(&app.IgnoreResampled, "ignore-resampled", "i", false, "ignore most resampled images")
+
+	saveCmd.Flags().
+		BoolVarP(&sspak.UseZSTD, "zstd", "z", false, "use zstd compression (experimental)")
 
 	saveCmd.Flags().
 		BoolVarP(&app.Verbose, "verbose", "v", false, "verbose output")

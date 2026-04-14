@@ -4,7 +4,8 @@ import (
 	"errors"
 
 	"github.com/axllent/ssbak/app"
-	"github.com/axllent/ssbak/utils"
+	"github.com/axllent/ssbak/internal/sspak"
+	"github.com/axllent/ssbak/internal/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -14,7 +15,7 @@ var extractCmd = &cobra.Command{
 	Short: "Extract .sspak backup",
 	Long:  `Extract the contents of an .sspak backup.`,
 	Args:  cobra.RangeArgs(1, 2),
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(_ *cobra.Command, args []string) error {
 		outputDir := "."
 		if len(args) == 2 {
 			outputDir = args[1]
@@ -28,7 +29,7 @@ var extractCmd = &cobra.Command{
 			return err
 		}
 
-		return utils.ExtractSSPak(args[0], outputDir)
+		return sspak.Extract(args[0], outputDir)
 	},
 }
 

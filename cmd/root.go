@@ -21,7 +21,7 @@ Support/Documentation
   https://github.com/axllent/ssbak`,
 	SilenceUsage:  true, // suppress help screen on error
 	SilenceErrors: true, // suppress duplicate error on error
-	PersistentPostRunE: func(cmd *cobra.Command, args []string) error {
+	PersistentPostRunE: func(_ *cobra.Command, _ []string) error {
 		// delete temporary files after completion
 		return app.Cleanup()
 	},
@@ -42,7 +42,7 @@ func Execute() {
 
 		// Clean up temporary files on error, don't print any cleanup errors
 		// as they would have already been returned above
-		_ = app.Cleanup() // #nosec
+		_ = app.Cleanup()
 
 		// detect if subcommand is valid
 		help := "\nSee: `ssbak -h` for help"
