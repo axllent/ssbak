@@ -343,8 +343,8 @@ func extract(filePath string, directory string) error {
 			continue
 		}
 
-		dir := filepath.Join(directory, filepath.Dir(header.Name))
-		filename := filepath.Join(dir, path.Clean(fileInfo.Name()))
+		filename := filepath.Join(directory, filepath.FromSlash(path.Clean(header.Name)))
+		dir := filepath.Dir(filename)
 
 		if skipResampled(filename) {
 			continue

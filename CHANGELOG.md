@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.3]
+
+- Fix path handling in extract function to prevent duplicate folder names
+- Update Go dependencies
+
 ## [1.2.2]
 
 - Increase buffer size in MySQLLoadFromGz to handle very long lines and prevent crashes
