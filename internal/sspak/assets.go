@@ -120,15 +120,17 @@ func (f *File) AddAssets(assetsDir string) error {
 // LoadAssets extracts the assets archive from f.AssetsFile into assetsBase.
 // Any existing assets directory is renamed to assets.old and scheduled for cleanup.
 // It supports both tar.gz and tar.zst formats.
+// When f.SourceSSPak is set the archive entry is streamed directly without temp files.
 func (f *File) LoadAssets(assetsBase string) error {
-	inSize, _ := utils.CalcSize(f.AssetsFile)
-
 	if assetsBase == "" {
 		assetsBase = "."
 	}
 
-	if err := utils.HasEnoughSpace(assetsBase, inSize); err != nil {
-		return err
+	if f.SourceSSPak == "" {
+		inSize, _ := utils.CalcSize(f.AssetsFile)
+		if err := utils.HasEnoughSpace(assetsBase, inSize); err != nil {
+			return err
+		}
 	}
 
 	assetsPath := filepath.Join(assetsBase, "assets")
@@ -146,8 +148,20 @@ func (f *File) LoadAssets(assetsBase string) error {
 		app.Log("Ignoring resampled images")
 	}
 
-	if err := extractAssets(f.AssetsFile, assetsBase); err != nil {
-		return err
+	if f.SourceSSPak != "" {
+		r, cleanup, err := openSSPakEntry(f.SourceSSPak, f.AssetsFile)
+		if err != nil {
+			return err
+		}
+		defer cleanup()
+
+		if err := extractAssetsFromReader(r, strings.HasSuffix(f.AssetsFile, ".tar.zst"), assetsBase); err != nil {
+			return err
+		}
+	} else {
+		if err := extractAssets(f.AssetsFile, assetsBase); err != nil {
+			return err
+		}
 	}
 
 	outSize, _ := utils.CalcSize(assetsPath)

@@ -167,26 +167,37 @@ func (f *File) LoadDatabase(dropDatabase bool) error {
 		return err
 	}
 
-	// Import the dump
-	file, err := os.Open(filepath.Clean(f.DatabaseFile))
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if err := file.Close(); err != nil {
-			fmt.Printf("error closing file: %s\n", err)
+	// Import the dump — either stream directly from the sspak or open the temp file.
+	var rawReader io.Reader
+	if f.SourceSSPak != "" {
+		entryReader, cleanup, err := openSSPakEntry(f.SourceSSPak, f.DatabaseFile)
+		if err != nil {
+			return err
 		}
-	}()
+		defer cleanup()
+		rawReader = entryReader
+	} else {
+		file, err := os.Open(filepath.Clean(f.DatabaseFile))
+		if err != nil {
+			return err
+		}
+		defer func() {
+			if err := file.Close(); err != nil {
+				fmt.Printf("error closing file: %s\n", err)
+			}
+		}()
+		rawReader = file
+	}
 
 	var reader io.ReadCloser
 	if strings.HasSuffix(f.DatabaseFile, ".zst") {
-		zstdDecoder, err := zstd.NewReader(file)
+		zstdDecoder, err := zstd.NewReader(rawReader)
 		if err != nil {
 			return fmt.Errorf("error creating zstd reader: %s", err.Error())
 		}
 		reader = zstdDecoder.IOReadCloser()
 	} else {
-		reader, err = gzip.NewReader(file)
+		reader, err = gzip.NewReader(rawReader)
 		if err != nil {
 			return fmt.Errorf("error creating gzip reader: %s", err.Error())
 		}

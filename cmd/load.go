@@ -32,7 +32,7 @@ var loadCmd = &cobra.Command{
 			app.ProjectRoot = args[1]
 		}
 
-		archive, err := sspak.Open(args[0])
+		archive, err := sspak.Probe(args[0])
 		if err != nil {
 			return err
 		}

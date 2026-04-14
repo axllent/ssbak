@@ -18,9 +18,31 @@ import (
 
 // extractAssets extracts a compressed assets archive (tar.gz or tar.zst) into directory.
 // The format is detected by the file extension of filePath.
-func extractAssets(filePath, directory string) (err error) {
+func extractAssets(filePath, directory string) error {
+	var err error
+	filePath, err = filepath.Abs(filepath.Clean(filePath))
+	if err != nil {
+		return err
+	}
+
+	file, err := os.Open(filePath)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := file.Close(); err != nil {
+			fmt.Printf("Error closing file: %s\n", err)
+		}
+	}()
+
+	return extractAssetsFromReader(file, strings.HasSuffix(filePath, ".tar.zst"), directory)
+}
+
+// extractAssetsFromReader extracts a compressed assets tar archive from r into directory.
+// isZSTD selects zstd decompression; otherwise gzip is assumed.
+func extractAssetsFromReader(r io.Reader, isZSTD bool, directory string) (err error) {
 	directory = stripTrailingSlash(directory)
-	filePath, directory, err = makeAbsolute(filePath, directory)
+	directory, err = filepath.Abs(directory)
 	if err != nil {
 		return err
 	}
@@ -35,27 +57,17 @@ func extractAssets(filePath, directory string) (err error) {
 		}
 	}()
 
-	file, err := os.Open(filepath.Clean(filePath))
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if err := file.Close(); err != nil {
-			fmt.Printf("Error closing file: %s\n", err)
-		}
-	}()
-
 	var tarReader *tar.Reader
 
-	if strings.HasSuffix(filePath, ".tar.zst") {
-		zstdDecoder, err := zstd.NewReader(file)
+	if isZSTD {
+		zstdDecoder, err := zstd.NewReader(r)
 		if err != nil {
 			return err
 		}
 		defer zstdDecoder.Close()
 		tarReader = tar.NewReader(zstdDecoder)
 	} else {
-		gzipReader, err := gzip.NewReader(bufio.NewReader(file))
+		gzipReader, err := gzip.NewReader(bufio.NewReader(r))
 		if err != nil {
 			return err
 		}
@@ -206,15 +218,6 @@ func stripTrailingSlash(p string) string {
 		return p[:len(p)-1]
 	}
 	return p
-}
-
-func makeAbsolute(inputFilePath, outputFilePath string) (string, string, error) {
-	in, err := filepath.Abs(inputFilePath)
-	if err != nil {
-		return "", "", err
-	}
-	out, err := filepath.Abs(outputFilePath)
-	return in, out, err
 }
 
 // Read a directory and write it to the tar writer. Recursive function that writes all sub folders.

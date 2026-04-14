@@ -24,6 +24,7 @@ type File struct {
 	DatabaseFile string
 	AssetsFile   string
 	TempFolder   string // TempFolder is used for processing the files before creating the final .sspak file.
+	SourceSSPak  string // SourceSSPak is set when streaming directly from the archive (no temp files).
 }
 
 // New creates a new File struct with the given name and a temporary path for processing.
@@ -77,6 +78,88 @@ func Open(sspakFile string) (*File, error) {
 	}
 
 	return f, nil
+}
+
+// Probe opens an sspak file, reads only the tar headers to discover what entries
+// are present, and returns a File with DatabaseFile/AssetsFile set to the entry
+// names (not real file paths). SourceSSPak is set so that LoadDatabase and
+// LoadAssets can stream directly from the archive without writing temp files.
+func Probe(sspakFile string) (*File, error) {
+	sspakFile = filepath.Clean(sspakFile)
+
+	app.Log(fmt.Sprintf("Opening SSPak archive '%s'", sspakFile))
+
+	r, err := os.Open(sspakFile)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err := r.Close(); err != nil {
+			fmt.Printf("Error closing file: %s\n", err)
+		}
+	}()
+
+	tr := tar.NewReader(r)
+	f := &File{SourceSSPak: sspakFile}
+
+	for {
+		header, err := tr.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		switch header.Name {
+		case "database.sql.gz", "database.sql.zst":
+			f.DatabaseFile = header.Name
+		case "assets.tar.gz", "assets.tar.zst":
+			f.AssetsFile = header.Name
+		}
+
+		// Discard entry data to advance to the next header.
+		if _, err := io.Copy(io.Discard, tr); err != nil {
+			return nil, err
+		}
+	}
+
+	return f, nil
+}
+
+// openSSPakEntry opens the named tar entry within an sspak file and returns a
+// reader positioned at the start of that entry's data. The caller must invoke
+// the returned cleanup func when done to close the underlying file.
+func openSSPakEntry(sspakFile, entryName string) (io.Reader, func(), error) {
+	f, err := os.Open(filepath.Clean(sspakFile))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	tr := tar.NewReader(f)
+	for {
+		header, err := tr.Next()
+		if err == io.EOF {
+			_ = f.Close()
+			return nil, nil, fmt.Errorf("entry '%s' not found in '%s'", entryName, sspakFile)
+		}
+		if err != nil {
+			_ = f.Close()
+			return nil, nil, err
+		}
+		if header.Name == entryName {
+			return tr, func() {
+				if err := f.Close(); err != nil {
+					fmt.Printf("Error closing file: %s\n", err)
+				}
+			}, nil
+		}
+		// Skip this entry's data to advance to the next header.
+		if _, err := io.Copy(io.Discard, tr); err != nil {
+			_ = f.Close()
+			return nil, nil, err
+		}
+	}
 }
 
 // Extract extracts the raw contents of an sspak file directly into outputDir.
