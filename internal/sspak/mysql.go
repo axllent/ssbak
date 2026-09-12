@@ -253,7 +253,7 @@ func (f *File) LoadDatabase(dropDatabase bool) error {
 			stmt += line + " "
 			if strings.TrimSpace(stmt) != "" {
 				if _, err := db.Exec(stmt); err != nil {
-					return err
+					return sqlExecError(err, stmt)
 				}
 			}
 			stmt = ""
@@ -268,13 +268,24 @@ func (f *File) LoadDatabase(dropDatabase bool) error {
 
 	if strings.TrimSpace(stmt) != "" {
 		if _, err := db.Exec(stmt); err != nil {
-			return err
+			return sqlExecError(err, stmt)
 		}
 	}
 
 	app.Log(fmt.Sprintf("Imported '%s' to '%s'", f.DatabaseFile, app.DB.Name))
 
 	return nil
+}
+
+// sqlExecError wraps a SQL execution error with a truncated preview of the
+// failing statement to aid debugging.
+func sqlExecError(err error, stmt string) error {
+	preview := strings.TrimSpace(stmt)
+	if len(preview) > 200 {
+		preview = preview[:200] + "..."
+	}
+
+	return fmt.Errorf("error executing SQL: %w\nstatement: %s", err, preview)
 }
 
 func genMySQLConfig() *mysql.Config {
