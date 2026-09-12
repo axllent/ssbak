@@ -17,8 +17,24 @@ import (
 	"github.com/klauspost/compress/zstd"
 )
 
+// validateDBName checks that the database name does not contain characters
+// that could break backtick-quoted SQL identifiers.
+func validateDBName(name string) error {
+	if name == "" {
+		return fmt.Errorf("database name is empty")
+	}
+	if strings.ContainsAny(name, "`\x00") {
+		return fmt.Errorf("database name %q contains invalid characters", name)
+	}
+	return nil
+}
+
 // AddDatabase will dump a database and compress it using either gzip or zstd
 func (f *File) AddDatabase() error {
+	if err := validateDBName(app.DB.Name); err != nil {
+		return err
+	}
+
 	config := genMySQLConfig()
 
 	f.DatabaseFile = filepath.Join(f.TempFolder, "database.sql.gz")
@@ -143,6 +159,10 @@ func (f *File) AddDatabaseFromFile(sqlFile string) error {
 // LoadDatabase creates the target database (optionally dropping it first) and
 // imports the SQL dump from f.DatabaseFile, supporting both gzip and zstd.
 func (f *File) LoadDatabase(dropDatabase bool) error {
+	if err := validateDBName(app.DB.Name); err != nil {
+		return err
+	}
+
 	config := genMySQLConfig()
 	configNoDB := *config
 	configNoDB.DBName = ""
