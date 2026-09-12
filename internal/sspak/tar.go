@@ -128,26 +128,7 @@ func extractAssetsFromReader(r io.Reader, isZSTD bool, directory string) (err er
 			return err
 		}
 
-		w := bufio.NewWriter(f)
-		buf := make([]byte, 4096)
-		for {
-			n, readErr := tarReader.Read(buf)
-			if n > 0 {
-				if _, err := w.Write(buf[:n]); err != nil {
-					_ = f.Close()
-					return err
-				}
-			}
-			if readErr == io.EOF {
-				break
-			}
-			if readErr != nil {
-				_ = f.Close()
-				return readErr
-			}
-		}
-
-		if err := w.Flush(); err != nil {
+		if _, err := io.Copy(f, tarReader); err != nil {
 			_ = f.Close()
 			return err
 		}
@@ -208,7 +189,7 @@ func mkdirAll(dirPath string, perm os.FileMode) (func(), error) {
 
 	return func() {
 		if err := os.RemoveAll(undoDir); err != nil {
-			panic(err)
+			fmt.Fprintf(os.Stderr, "error cleaning up %q: %v\n", undoDir, err)
 		}
 	}, nil
 }

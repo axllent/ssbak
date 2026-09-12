@@ -28,12 +28,15 @@ type File struct {
 }
 
 // New creates a new File struct with the given name and a temporary path for processing.
-func New() *File {
-	tempFolder := app.GetTempDir()
+func New() (*File, error) {
+	tempFolder, err := app.GetTempDir()
+	if err != nil {
+		return nil, err
+	}
 
 	return &File{
 		TempFolder: tempFolder,
-	}
+	}, nil
 }
 
 // Open extracts an sspak file to a temporary directory and returns a File struct
@@ -47,7 +50,10 @@ func Open(sspakFile string) (*File, error) {
 		return nil, err
 	}
 
-	tempFolder := app.GetTempDir()
+	tempFolder, err := app.GetTempDir()
+	if err != nil {
+		return nil, err
+	}
 
 	if err := utils.HasEnoughSpace(tempFolder, inSize); err != nil {
 		return nil, err
@@ -215,6 +221,12 @@ func extractSSPakContents(sspakFile, outDir string) error {
 		}
 		if isDatabase && app.OnlyAssets {
 			app.Log(fmt.Sprintf("Skipping extraction of '%s' (--assets)", header.Name))
+			continue
+		}
+
+		// Prevent path traversal (CWE-22): skip entries with ".." or
+		// absolute paths that would escape the output directory.
+		if !filepath.IsLocal(header.Name) {
 			continue
 		}
 

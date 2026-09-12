@@ -1,3 +1,4 @@
+// Package utils provides utility functions for file and directory operations.
 package utils
 
 import (
@@ -48,8 +49,9 @@ func CalcSize(path string) (int64, error) {
 		if !info.IsDir() {
 			size += info.Size()
 		}
-		return err
+		return nil
 	})
+
 	return size, err
 }
 
@@ -64,6 +66,7 @@ func ByteToHr(b int64) string {
 		div *= unit
 		exp++
 	}
+
 	return fmt.Sprintf("%.1f%ciB",
 		float64(b)/float64(div), "KMGTPE"[exp])
 }

@@ -76,20 +76,36 @@ func BootstrapEnv(dir string) error {
 func findConfig(dir string) (configFile, error) {
 	r := configFile{}
 	if isFile(path.Join(dir, ".env")) {
-		r.Path = RealPath(path.Join(dir, ".env"))
+		p, err := RealPath(path.Join(dir, ".env"))
+		if err != nil {
+			return r, err
+		}
+		r.Path = p
 		return r, nil
 	}
 	if isFile(path.Join(filepath.Dir(dir), ".env")) {
-		r.Path = RealPath(path.Join(filepath.Dir(dir), ".env"))
+		p, err := RealPath(path.Join(filepath.Dir(dir), ".env"))
+		if err != nil {
+			return r, err
+		}
+		r.Path = p
 		return r, nil
 	}
 	if isFile(path.Join(dir, "_ss_environment.php")) {
-		r.Path = RealPath(path.Join(dir, "_ss_environment.php"))
+		p, err := RealPath(path.Join(dir, "_ss_environment.php"))
+		if err != nil {
+			return r, err
+		}
+		r.Path = p
 		r.PHP = true
 		return r, nil
 	}
 	if isFile(path.Join(filepath.Dir(dir), "_ss_environment.php")) {
-		r.Path = RealPath(path.Join(filepath.Dir(dir), "_ss_environment.php"))
+		p, err := RealPath(path.Join(filepath.Dir(dir), "_ss_environment.php"))
+		if err != nil {
+			return r, err
+		}
+		r.Path = p
 		r.PHP = true
 		return r, nil
 	}
@@ -99,9 +115,6 @@ func findConfig(dir string) (configFile, error) {
 
 // Extract variables from the system environment if set
 func setFromEnv() {
-	if v, ok := os.LookupEnv("SS_DATABASE_SERVER"); ok {
-		DB.Host = v
-	}
 	if v, ok := os.LookupEnv("SS_DATABASE_SERVER"); ok {
 		DB.Host = v
 	}

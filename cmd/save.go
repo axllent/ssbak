@@ -26,7 +26,10 @@ var saveCmd = &cobra.Command{
 			return errors.New("you cannot use --assets and --db flags together")
 		}
 
-		archive := sspak.New()
+		archive, err := sspak.New()
+		if err != nil {
+			return err
+		}
 
 		if !app.OnlyAssets {
 			if err := archive.AddDatabase(); err != nil {
@@ -35,12 +38,21 @@ var saveCmd = &cobra.Command{
 		}
 
 		if !app.OnlyDB {
-			var assetsDir string
+			var (
+				assetsDir string
+				err       error
+			)
 
 			if utils.IsDir(path.Join(app.ProjectRoot, "assets")) {
-				assetsDir = app.RealPath(path.Join(app.ProjectRoot, "assets"))
+				assetsDir, err = app.RealPath(path.Join(app.ProjectRoot, "assets"))
+				if err != nil {
+					return err
+				}
 			} else if utils.IsDir(path.Join(app.ProjectRoot, "public", "assets")) {
-				assetsDir = app.RealPath(path.Join(app.ProjectRoot, "public", "assets"))
+				assetsDir, err = app.RealPath(path.Join(app.ProjectRoot, "public", "assets"))
+				if err != nil {
+					return err
+				}
 			} else {
 				return errors.New("could not locate assets directory")
 			}

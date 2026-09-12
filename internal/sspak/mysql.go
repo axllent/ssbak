@@ -17,8 +17,24 @@ import (
 	"github.com/klauspost/compress/zstd"
 )
 
+// validateDBName checks that the database name does not contain characters
+// that could break backtick-quoted SQL identifiers.
+func validateDBName(name string) error {
+	if name == "" {
+		return fmt.Errorf("database name is empty")
+	}
+	if strings.ContainsAny(name, "`\x00") {
+		return fmt.Errorf("database name %q contains invalid characters", name)
+	}
+	return nil
+}
+
 // AddDatabase will dump a database and compress it using either gzip or zstd
 func (f *File) AddDatabase() error {
+	if err := validateDBName(app.DB.Name); err != nil {
+		return err
+	}
+
 	config := genMySQLConfig()
 
 	f.DatabaseFile = filepath.Join(f.TempFolder, "database.sql.gz")
@@ -143,6 +159,10 @@ func (f *File) AddDatabaseFromFile(sqlFile string) error {
 // LoadDatabase creates the target database (optionally dropping it first) and
 // imports the SQL dump from f.DatabaseFile, supporting both gzip and zstd.
 func (f *File) LoadDatabase(dropDatabase bool) error {
+	if err := validateDBName(app.DB.Name); err != nil {
+		return err
+	}
+
 	config := genMySQLConfig()
 	configNoDB := *config
 	configNoDB.DBName = ""
@@ -233,7 +253,7 @@ func (f *File) LoadDatabase(dropDatabase bool) error {
 			stmt += line + " "
 			if strings.TrimSpace(stmt) != "" {
 				if _, err := db.Exec(stmt); err != nil {
-					return err
+					return sqlExecError(err, stmt)
 				}
 			}
 			stmt = ""
@@ -242,15 +262,30 @@ func (f *File) LoadDatabase(dropDatabase bool) error {
 		}
 	}
 
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("error reading database dump: %w", err)
+	}
+
 	if strings.TrimSpace(stmt) != "" {
 		if _, err := db.Exec(stmt); err != nil {
-			return err
+			return sqlExecError(err, stmt)
 		}
 	}
 
 	app.Log(fmt.Sprintf("Imported '%s' to '%s'", f.DatabaseFile, app.DB.Name))
 
 	return nil
+}
+
+// sqlExecError wraps a SQL execution error with a truncated preview of the
+// failing statement to aid debugging.
+func sqlExecError(err error, stmt string) error {
+	preview := strings.TrimSpace(stmt)
+	if len(preview) > 200 {
+		preview = preview[:200] + "..."
+	}
+
+	return fmt.Errorf("error executing SQL: %w\nstatement: %s", err, preview)
 }
 
 func genMySQLConfig() *mysql.Config {
