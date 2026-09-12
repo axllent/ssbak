@@ -242,6 +242,10 @@ func (f *File) LoadDatabase(dropDatabase bool) error {
 		}
 	}
 
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("error reading database dump: %w", err)
+	}
+
 	if strings.TrimSpace(stmt) != "" {
 		if _, err := db.Exec(stmt); err != nil {
 			return err
