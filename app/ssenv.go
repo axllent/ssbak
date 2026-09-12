@@ -102,9 +102,6 @@ func setFromEnv() {
 	if v, ok := os.LookupEnv("SS_DATABASE_SERVER"); ok {
 		DB.Host = v
 	}
-	if v, ok := os.LookupEnv("SS_DATABASE_SERVER"); ok {
-		DB.Host = v
-	}
 	if v, ok := os.LookupEnv("SS_DATABASE_USERNAME"); ok {
 		DB.Username = v
 	}
