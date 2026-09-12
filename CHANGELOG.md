@@ -1,10 +1,16 @@
 # Changelog
 
-## [1.3.0-beta1]
+## [1.3.0]
 
 - Add experimental zstd compression support (`--zstd` flag)
 - Implement streaming support for SSPak archives in load functions
+- Add path traversal protection for sspak archive extraction
+- Validate database names to prevent SQL injection via config values
+- Refactor error handling to return errors instead of panicking
+- Add context to SQL execution errors to aid debugging
+- Improve tar extraction performance
 - Add unit and integration tests
+- Update Go dependencies
 
 ## [1.2.3]
 
