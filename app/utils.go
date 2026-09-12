@@ -10,22 +10,20 @@ import (
 )
 
 // GetTempDir will create & return a temporary directory if one has not been specified
-func GetTempDir() string {
+func GetTempDir() (string, error) {
 	if TempDir == "" {
 		randBytes := make([]byte, 6)
 		if _, err := rand.Read(randBytes); err != nil {
-			panic(err)
+			return "", fmt.Errorf("generating random temp dir name: %w", err)
 		}
 		TempDir = filepath.Join(os.TempDir(), "ssbak-"+hex.EncodeToString(randBytes))
 		AddTempFile(TempDir)
 	}
 	if err := mkDirIfNotExists(TempDir); err != nil {
-		// need a better way to exit
-		fmt.Printf("Error: %v", err)
-		os.Exit(2)
+		return "", fmt.Errorf("creating temp directory: %w", err)
 	}
 
-	return TempDir
+	return TempDir, nil
 }
 
 // AddTempFile adds a file to the temporary files to clean up
@@ -88,20 +86,20 @@ func isDir(path string) bool {
 }
 
 // RealPath will return the actual path if the path is a symbolic link
-func RealPath(filename string) string {
+func RealPath(filename string) (string, error) {
 	fi, err := os.Lstat(filename)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 
 	if fi.Mode()&os.ModeSymlink == os.ModeSymlink {
 		realPath, err := filepath.EvalSymlinks(filename)
 		if err != nil {
-			panic(err)
+			return "", err
 		}
 
-		return realPath
+		return realPath, nil
 	}
 
-	return filename
+	return filename, nil
 }

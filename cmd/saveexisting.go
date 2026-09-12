@@ -33,7 +33,10 @@ var saveExistingCmd = &cobra.Command{
 			return fmt.Errorf("assets directory '%s' does not exist", assetsDir)
 		}
 
-		archive := sspak.New()
+		archive, err := sspak.New()
+		if err != nil {
+			return err
+		}
 
 		if sqlFile != "" {
 			if err := archive.AddDatabaseFromFile(sqlFile); err != nil {

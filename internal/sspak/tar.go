@@ -208,7 +208,7 @@ func mkdirAll(dirPath string, perm os.FileMode) (func(), error) {
 
 	return func() {
 		if err := os.RemoveAll(undoDir); err != nil {
-			panic(err)
+			fmt.Fprintf(os.Stderr, "error cleaning up %q: %v\n", undoDir, err)
 		}
 	}, nil
 }
