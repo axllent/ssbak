@@ -218,6 +218,12 @@ func extractSSPakContents(sspakFile, outDir string) error {
 			continue
 		}
 
+		// Prevent path traversal (CWE-22): skip entries with ".." or
+		// absolute paths that would escape the output directory.
+		if !filepath.IsLocal(header.Name) {
+			continue
+		}
+
 		target := filepath.Join(outDir, filepath.Clean(header.Name))
 
 		switch header.Typeflag {
