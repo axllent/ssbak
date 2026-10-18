@@ -3,6 +3,7 @@ package sspak
 import (
 	"bufio"
 	"compress/gzip"
+	"context"
 	"database/sql"
 	"fmt"
 	"io"
@@ -10,7 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/aliakseiz/go-mysqldump"
+	"github.com/aliakseiz/go-mysqldump/v2"
 	"github.com/axllent/ssbak/app"
 	"github.com/axllent/ssbak/internal/utils"
 	"github.com/go-sql-driver/mysql"
@@ -80,7 +81,7 @@ func (f *File) AddDatabase() error {
 	}
 
 	// Dump database to file
-	if err = dumper.Dump(); err != nil {
+	if err = dumper.Dump(context.Background()); err != nil {
 		_ = compressor.Close()
 		return fmt.Errorf("error dumping: %s", err.Error())
 	}

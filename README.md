@@ -66,7 +66,7 @@ If you need to programmatically install ssbak (amd64) to `/usr/local/bin/ssbak` 
 curl -sL https://github.com/axllent/ssbak/releases/latest/download/ssbak_linux_amd64.tar.gz | sudo tar -zx -C /usr/local/bin/ ssbak
 ```
 
-To install & compile SSBak from source: `go install github.com/axllent/ssbak@latest` (Go >= 1.14 required).
+To install & compile SSBak from source: `go install github.com/axllent/ssbak@latest` (Go required).
 
 ## Environment settings
 
