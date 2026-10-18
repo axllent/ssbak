@@ -9,3 +9,4 @@ public/
 .env
 _ss_environment.php
 ssbak
+!e2e/testdata/*.sql
