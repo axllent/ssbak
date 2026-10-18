@@ -41,3 +41,51 @@ jobs:
 
       - name: Run integration tests
         run: go test -v -tags integration ./internal/sspak/
+
+  e2e-tests:
+    name: E2E (${{ matrix.name }})
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: MySQL 8.0
+            image: mysql:8.0
+            health_cmd: mysqladmin ping -h 127.0.0.1 -proot
+          - name: MySQL 8.4
+            image: mysql:8.4
+            health_cmd: mysqladmin ping -h 127.0.0.1 -proot
+          - name: MariaDB 10.11
+            image: mariadb:10.11
+            health_cmd: healthcheck.sh --connect --innodb_initialized
+          - name: MariaDB 11
+            image: mariadb:11
+            health_cmd: healthcheck.sh --connect --innodb_initialized
+    services:
+      db:
+        image: ${{ matrix.image }}
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="${{ matrix.health_cmd }}"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    env:
+      TEST_DB_HOST: 127.0.0.1
+      TEST_DB_PORT: "3306"
+      TEST_DB_USER: root
+      TEST_DB_PASS: root
+      TEST_DB_NAME: ssbak_e2e
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Run e2e tests
+        run: go test -v -count=1 -tags e2e ./e2e/

@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.1]
+
+- Update Go dependencies
+- Add e2e workflow tests
+
 ## [1.3.0]
 
 - Add experimental zstd compression support (`--zstd` flag)

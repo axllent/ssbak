@@ -23,7 +23,7 @@ SSBak is a self-contained static binary written in Go, and does not use third-pa
 - Compatible with the standard `*.sspak` file format (non-executable tar files).
 - Create and restore database and/or assets regardless of size.
 - Optionally create or restore without resampled images (`--ignore-resampled`). Note: this skips most common image manipulations except for `ResizedImages` which are usually generated for HTMLText and cannot be regenerated "on the fly".
-- Experimental zstd compression (instead fg gzip) for faster compression and decompression speeds and better compression ratios (`-z` or `--zstd`). Note: this is not compatible with the legacy SSPak utility and will requires SSBak to extract.
+- Optional zstd compression (rather than gzip) for faster compression/decompression speeds and better compression ratios (`-z` or `--zstd`). Note: this is not compatible with the legacy SSPak utility and will requires SSBak >= 1.3.0 to extract.
 - SSBak does not use PHP at all (see [limitations](#limitations)).
 - SSBak does not use `mysqldump` or `mysql` command-line utilities, functionality is built in.
 - Multi-platform static binaries (Linux, macOS and Windows).
@@ -66,7 +66,7 @@ If you need to programmatically install ssbak (amd64) to `/usr/local/bin/ssbak` 
 curl -sL https://github.com/axllent/ssbak/releases/latest/download/ssbak_linux_amd64.tar.gz | sudo tar -zx -C /usr/local/bin/ ssbak
 ```
 
-To install & compile SSBak from source: `go install github.com/axllent/ssbak@latest` (Go >= 1.14 required).
+To install & compile SSBak from source: `go install github.com/axllent/ssbak@latest` (Go required).
 
 ## Environment settings
 
