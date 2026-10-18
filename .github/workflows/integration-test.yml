@@ -56,6 +56,9 @@ jobs:
           - name: MySQL 8.4
             image: mysql:8.4
             health_cmd: mysqladmin ping -h 127.0.0.1 -proot
+          - name: MariaDB 10.11
+            image: mariadb:10.11
+            health_cmd: healthcheck.sh --connect --innodb_initialized
           - name: MariaDB 11
             image: mariadb:11
             health_cmd: healthcheck.sh --connect --innodb_initialized
