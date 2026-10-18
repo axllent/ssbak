@@ -43,26 +43,31 @@ jobs:
         run: go test -v -tags integration ./internal/sspak/
 
   e2e-tests:
-    name: E2E save/load (MySQL, ${{ matrix.compression }})
+    name: E2E (${{ matrix.name }})
     needs: unit-tests
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         include:
-          - compression: gzip
-            flags: ""
-          - compression: zstd
-            flags: "--zstd"
+          - name: MySQL 8.0
+            image: mysql:8.0
+            health_cmd: mysqladmin ping -h 127.0.0.1 -proot
+          - name: MySQL 8.4
+            image: mysql:8.4
+            health_cmd: mysqladmin ping -h 127.0.0.1 -proot
+          - name: MariaDB 11
+            image: mariadb:11
+            health_cmd: healthcheck.sh --connect --innodb_initialized
     services:
-      mysql:
-        image: mysql:8.4
+      db:
+        image: ${{ matrix.image }}
         env:
           MYSQL_ROOT_PASSWORD: root
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
+          --health-cmd="${{ matrix.health_cmd }}"
           --health-interval=5s
           --health-timeout=5s
           --health-retries=20
@@ -79,11 +84,5 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - name: Ensure mysql client is installed
-        run: command -v mysql >/dev/null || (sudo apt-get update && sudo apt-get install -y mysql-client)
-
-      - name: Build ssbak
-        run: go build -o ssbak .
-
-      - name: Run e2e test
-        run: SSBAK_BIN=./ssbak ./e2e/e2e.sh ${{ matrix.flags }}
+      - name: Run e2e tests
+        run: go test -v -count=1 -tags e2e ./e2e/

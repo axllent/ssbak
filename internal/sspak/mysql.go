@@ -231,6 +231,16 @@ func (f *File) LoadDatabase(dropDatabase bool) error {
 	}
 	defer func() { _ = db.Close() }()
 
+	// Run the whole import on a single connection, as session settings (such as
+	// the foreign key checks below) only apply to the connection that set them.
+	ctx := context.Background()
+
+	conn, err := db.Conn(ctx)
+	if err != nil {
+		return fmt.Errorf("error connecting to database: %s", err.Error())
+	}
+	defer func() { _ = conn.Close() }()
+
 	scanner := bufio.NewScanner(reader)
 	scanner.Split(bufio.ScanLines)
 	buf := make([]byte, 0, bufio.MaxScanTokenSize)
@@ -240,7 +250,14 @@ func (f *File) LoadDatabase(dropDatabase bool) error {
 	app.Log(fmt.Sprintf("Importing database to '%s'", app.DB.Name))
 
 	// Ensure compatibility with MySQL & MariaDB across strict mode variants
-	if _, err := db.Exec("SET sql_mode = '';"); err != nil {
+	if _, err := conn.ExecContext(ctx, "SET sql_mode = '';"); err != nil {
+		return err
+	}
+
+	// Tables are created in alphabetical order, and rows may reference rows that
+	// are inserted later, so constraints cannot be checked until the end. The
+	// dump header sets these too, but header lines are skipped below.
+	if _, err := conn.ExecContext(ctx, "SET foreign_key_checks = 0, unique_checks = 0;"); err != nil {
 		return err
 	}
 
@@ -253,7 +270,7 @@ func (f *File) LoadDatabase(dropDatabase bool) error {
 		case strings.HasSuffix(line, ";"):
 			stmt += line + " "
 			if strings.TrimSpace(stmt) != "" {
-				if _, err := db.Exec(stmt); err != nil {
+				if _, err := conn.ExecContext(ctx, stmt); err != nil {
 					return sqlExecError(err, stmt)
 				}
 			}
@@ -268,7 +285,7 @@ func (f *File) LoadDatabase(dropDatabase bool) error {
 	}
 
 	if strings.TrimSpace(stmt) != "" {
-		if _, err := db.Exec(stmt); err != nil {
+		if _, err := conn.ExecContext(ctx, stmt); err != nil {
 			return sqlExecError(err, stmt)
 		}
 	}
