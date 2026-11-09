@@ -121,7 +121,9 @@ func (f *File) AddAssets(assetsDir string) error {
 // LoadAssets extracts the assets archive from f.AssetsFile into assetsPath.
 // The archive's top-level directory (normally "assets") is stripped, so the
 // contents are extracted directly into assetsPath.
-// Any existing assetsPath directory is renamed to <assetsPath>.old and scheduled for cleanup.
+// Any existing assetsPath directory is renamed to <assetsPath>.old and deleted after a
+// successful extraction. If the extraction fails, the original directory is restored.
+// Callers should check the target with ValidateAssetsTarget first.
 // It supports both tar.gz and tar.zst formats.
 // When f.SourceSSPak is set the archive entry is streamed directly without temp files.
 func (f *File) LoadAssets(assetsPath string) error {
@@ -129,6 +131,7 @@ func (f *File) LoadAssets(assetsPath string) error {
 		assetsPath = "assets"
 	}
 	assetsPath = filepath.Clean(assetsPath)
+	oldPath := assetsPath + ".old"
 
 	if f.SourceSSPak == "" {
 		inSize, _ := utils.CalcSize(f.AssetsFile)
@@ -137,12 +140,36 @@ func (f *File) LoadAssets(assetsPath string) error {
 		}
 	}
 
-	if IsDir(assetsPath) {
-		app.Log(fmt.Sprintf("Renaming existing '%s' to '%s.old'", assetsPath, assetsPath))
-		if err := os.Rename(assetsPath, assetsPath+".old"); err != nil {
+	// Open the archive before renaming anything, so a failure here leaves the
+	// existing assets untouched.
+	var extract func() error
+	if f.SourceSSPak != "" {
+		r, cleanup, err := openSSPakEntry(f.SourceSSPak, f.AssetsFile)
+		if err != nil {
 			return err
 		}
-		app.AddTempFile(assetsPath + ".old")
+		defer cleanup()
+
+		extract = func() error {
+			return extractAssetsFromReader(r, strings.HasSuffix(f.AssetsFile, ".tar.zst"), assetsPath)
+		}
+	} else {
+		extract = func() error {
+			return extractAssets(f.AssetsFile, assetsPath)
+		}
+	}
+
+	renamed := false
+	if IsDir(assetsPath) {
+		if _, err := os.Lstat(oldPath); err == nil {
+			return fmt.Errorf("'%s' already exists (possibly from a previous failed restore), please remove it first", oldPath)
+		}
+
+		app.Log(fmt.Sprintf("Renaming existing '%s' to '%s'", assetsPath, oldPath))
+		if err := os.Rename(assetsPath, oldPath); err != nil {
+			return err
+		}
+		renamed = true
 	}
 
 	app.Log(fmt.Sprintf("Unpacking '%s' to '%s'", f.AssetsFile, assetsPath))
@@ -151,20 +178,21 @@ func (f *File) LoadAssets(assetsPath string) error {
 		app.Log("Ignoring resampled images")
 	}
 
-	if f.SourceSSPak != "" {
-		r, cleanup, err := openSSPakEntry(f.SourceSSPak, f.AssetsFile)
-		if err != nil {
-			return err
+	if err := extract(); err != nil {
+		if renamed {
+			// remove any partially extracted files & restore the original directory
+			_ = os.RemoveAll(assetsPath)
+			if rErr := os.Rename(oldPath, assetsPath); rErr != nil {
+				return fmt.Errorf("%w (failed to restore original assets from '%s': %v)", err, oldPath, rErr)
+			}
+			app.Log(fmt.Sprintf("Restored original '%s'", assetsPath))
 		}
-		defer cleanup()
+		return err
+	}
 
-		if err := extractAssetsFromReader(r, strings.HasSuffix(f.AssetsFile, ".tar.zst"), assetsPath); err != nil {
-			return err
-		}
-	} else {
-		if err := extractAssets(f.AssetsFile, assetsPath); err != nil {
-			return err
-		}
+	// only schedule the original assets for deletion once extraction has succeeded
+	if renamed {
+		app.AddTempFile(oldPath)
 	}
 
 	outSize, _ := utils.CalcSize(assetsPath)

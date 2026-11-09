@@ -39,20 +39,65 @@ func MkDirIfNotExists(path string) error {
 	return nil
 }
 
-// CalcSize returns the size of a directory or file
+// CalcSize returns the size of a directory or file. Symbolic links (including
+// path itself) are followed, matching how assets are archived. Broken symbolic
+// links within a directory are ignored.
 func CalcSize(path string) (int64, error) {
-	var size int64
-	err := filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if !info.IsDir() {
-			size += info.Size()
-		}
-		return nil
-	})
+	return calcSize(path, map[string]bool{})
+}
 
-	return size, err
+// calcSize does the work for CalcSize. visited contains the resolved paths of
+// the directories currently being walked, to prevent symlink loops.
+func calcSize(path string, visited map[string]bool) (int64, error) {
+	realPath, err := filepath.EvalSymlinks(path)
+	if err != nil {
+		return 0, err
+	}
+
+	info, err := os.Stat(realPath)
+	if err != nil {
+		return 0, err
+	}
+
+	if !info.IsDir() {
+		return info.Size(), nil
+	}
+
+	if visited[realPath] {
+		return 0, nil
+	}
+	visited[realPath] = true
+	defer delete(visited, realPath)
+
+	entries, err := os.ReadDir(realPath)
+	if err != nil {
+		return 0, err
+	}
+
+	var size int64
+	for _, entry := range entries {
+		child := filepath.Join(realPath, entry.Name())
+
+		if entry.IsDir() || entry.Type()&os.ModeSymlink != 0 {
+			s, err := calcSize(child, visited)
+			if err != nil {
+				if os.IsNotExist(err) {
+					continue // broken symlink
+				}
+				return size, err
+			}
+			size += s
+			continue
+		}
+
+		fi, err := entry.Info()
+		if err != nil {
+			return size, err
+		}
+		size += fi.Size()
+	}
+
+	return size, nil
 }
 
 // ByteToHr returns a human readable size as a string

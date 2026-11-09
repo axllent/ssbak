@@ -196,3 +196,51 @@ func TestLoadAssetsRenamesExisting(t *testing.T) {
 	require.NoError(t, app.Cleanup())
 	assert.NoDirExists(t, dest+".old", ".old directory should be removed on cleanup")
 }
+
+func TestLoadAssetsRestoresOriginalOnFailure(t *testing.T) {
+	app.IgnoreResampled = false
+
+	// corrupt assets archive
+	corrupt := filepath.Join(t.TempDir(), "assets.tar.gz")
+	require.NoError(t, os.WriteFile(corrupt, []byte("not a gzip file"), 0644))
+	f := &File{AssetsFile: corrupt}
+
+	dest := filepath.Join(t.TempDir(), "assets")
+	require.NoError(t, os.MkdirAll(dest, 0755))
+	require.NoError(t, os.WriteFile(filepath.Join(dest, "keep.txt"), []byte("keep"), 0644))
+
+	require.Error(t, f.LoadAssets(dest))
+
+	assert.FileExists(t, filepath.Join(dest, "keep.txt"), "original assets should be restored")
+	assert.NoDirExists(t, dest+".old")
+
+	// cleanup must not touch the restored original
+	require.NoError(t, app.Cleanup())
+	assert.FileExists(t, filepath.Join(dest, "keep.txt"))
+}
+
+func TestLoadAssetsRefusesExistingOld(t *testing.T) {
+	app.IgnoreResampled = false
+	UseZSTD = false
+
+	srcDir := filepath.Join(t.TempDir(), "assets")
+	require.NoError(t, os.MkdirAll(srcDir, 0755))
+	require.NoError(t, os.WriteFile(filepath.Join(srcDir, "photo.jpg"), []byte("new"), 0644))
+
+	f := &File{TempFolder: t.TempDir()}
+	require.NoError(t, f.AddAssets(srcDir))
+
+	dest := filepath.Join(t.TempDir(), "assets")
+	require.NoError(t, os.MkdirAll(dest, 0755))
+	require.NoError(t, os.WriteFile(filepath.Join(dest, "current.txt"), []byte("current"), 0644))
+	require.NoError(t, os.MkdirAll(dest+".old", 0755))
+	require.NoError(t, os.WriteFile(filepath.Join(dest+".old", "previous.txt"), []byte("previous"), 0644))
+
+	err := f.LoadAssets(dest)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "already exists")
+
+	// nothing was touched
+	assert.FileExists(t, filepath.Join(dest, "current.txt"))
+	assert.FileExists(t, filepath.Join(dest+".old", "previous.txt"))
+}

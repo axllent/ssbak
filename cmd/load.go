@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"os"
 	"path"
 	"path/filepath"
 
@@ -39,19 +40,13 @@ var loadCmd = &cobra.Command{
 			return err
 		}
 
-		if archive.DatabaseFile != "" && !app.OnlyAssets {
-			if err := app.BootstrapEnv(app.ProjectRoot); err != nil {
-				return err
-			}
+		loadAssets := archive.AssetsFile != "" && !app.OnlyDB
+		var assetsDir string
 
-			dropDatabase, _ := cmd.Flags().GetBool("drop-db")
-			if err := archive.LoadDatabase(dropDatabase); err != nil {
-				return err
-			}
-		}
-
-		if archive.AssetsFile != "" && !app.OnlyDB {
-			assetsDir, _ := cmd.Flags().GetString("assets-dir")
+		// Determine & validate the assets target before restoring anything,
+		// so an unsafe target fails before the database is replaced.
+		if loadAssets {
+			assetsDir, _ = cmd.Flags().GetString("assets-dir")
 			if assetsDir != "" {
 				// relative paths are relative to the webroot
 				if !filepath.IsAbs(assetsDir) {
@@ -65,6 +60,30 @@ var loadCmd = &cobra.Command{
 				}
 			}
 
+			cwd, _ := os.Getwd()
+			if err := sspak.ValidateAssetsTarget(
+				assetsDir,
+				app.ProjectRoot,
+				filepath.Join(app.ProjectRoot, "public"),
+				args[0],
+				cwd,
+			); err != nil {
+				return err
+			}
+		}
+
+		if archive.DatabaseFile != "" && !app.OnlyAssets {
+			if err := app.BootstrapEnv(app.ProjectRoot); err != nil {
+				return err
+			}
+
+			dropDatabase, _ := cmd.Flags().GetBool("drop-db")
+			if err := archive.LoadDatabase(dropDatabase); err != nil {
+				return err
+			}
+		}
+
+		if loadAssets {
 			if err := archive.LoadAssets(assetsDir); err != nil {
 				return err
 			}
