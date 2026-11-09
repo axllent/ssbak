@@ -117,11 +117,17 @@ func Probe(sspakFile string) (*File, error) {
 			return nil, err
 		}
 
+		// Assign constants rather than header.Name so untrusted archive entry
+		// names never flow into file paths (CWE-22).
 		switch header.Name {
-		case "database.sql.gz", "database.sql.zst":
-			f.DatabaseFile = header.Name
-		case "assets.tar.gz", "assets.tar.zst":
-			f.AssetsFile = header.Name
+		case "database.sql.gz":
+			f.DatabaseFile = "database.sql.gz"
+		case "database.sql.zst":
+			f.DatabaseFile = "database.sql.zst"
+		case "assets.tar.gz":
+			f.AssetsFile = "assets.tar.gz"
+		case "assets.tar.zst":
+			f.AssetsFile = "assets.tar.zst"
 		}
 
 		// Discard entry data to advance to the next header.

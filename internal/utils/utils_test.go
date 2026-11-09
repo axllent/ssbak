@@ -74,6 +74,32 @@ func TestCalcSize(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestCalcSizeFollowsSymlinks(t *testing.T) {
+	dir := t.TempDir()
+
+	target := filepath.Join(dir, "target")
+	require.NoError(t, os.MkdirAll(target, 0755))
+	require.NoError(t, os.WriteFile(filepath.Join(target, "a.txt"), []byte("aaa"), 0644))
+
+	outside := filepath.Join(dir, "outside")
+	require.NoError(t, os.MkdirAll(outside, 0755))
+	require.NoError(t, os.WriteFile(filepath.Join(outside, "b.txt"), []byte("bbbbb"), 0644))
+
+	// symlinked directory & file inside, a loop, and a broken link
+	require.NoError(t, os.Symlink(outside, filepath.Join(target, "linkeddir")))
+	require.NoError(t, os.Symlink(filepath.Join(outside, "b.txt"), filepath.Join(target, "linked.txt")))
+	require.NoError(t, os.Symlink(target, filepath.Join(target, "loop")))
+	require.NoError(t, os.Symlink(filepath.Join(dir, "missing"), filepath.Join(target, "broken")))
+
+	// path itself is a symlink
+	link := filepath.Join(dir, "link")
+	require.NoError(t, os.Symlink(target, link))
+
+	size, err := utils.CalcSize(link)
+	require.NoError(t, err)
+	assert.Equal(t, int64(3+5+5), size)
+}
+
 func TestByteToHr(t *testing.T) {
 	tests := []struct {
 		input    int64

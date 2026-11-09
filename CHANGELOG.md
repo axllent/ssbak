@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.2]
+
+- Add option to define custom assets directory for save & load (#42)
+- Prevent untrusted archive entry names from affecting file paths in Probe function
+- Enhance asset loading and validation
+- Update Go dependencies
+
 ## [1.3.1]
 
 - Update Go dependencies

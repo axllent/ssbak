@@ -3,7 +3,9 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"os"
 	"path"
+	"path/filepath"
 
 	"github.com/axllent/ssbak/app"
 	"github.com/axllent/ssbak/internal/sspak"
@@ -13,11 +15,12 @@ import (
 
 // loadCmd represents the load command
 var loadCmd = &cobra.Command{
-	Use:     "load <sspak> [<webroot>]",
-	Short:   "Restore database and/or assets from .sspak backup",
-	Long:    `Restore an .sspak file for a Silverstripe site. Deletes existing table data & assets so be careful!`,
-	Example: `  ssbak load website.sspak`,
-	Args:    cobra.RangeArgs(1, 2),
+	Use:   "load <sspak> [<webroot>]",
+	Short: "Restore database and/or assets from .sspak backup",
+	Long:  `Restore an .sspak file for a Silverstripe site. Deletes existing table data & assets so be careful!`,
+	Example: `  ssbak load website.sspak
+  ssbak load website.sspak --assets-dir /path/to/shared/assets`,
+	Args: cobra.RangeArgs(1, 2),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if !utils.IsFile(args[0]) {
 			return fmt.Errorf("'%s' does not exist", args[0])
@@ -37,6 +40,38 @@ var loadCmd = &cobra.Command{
 			return err
 		}
 
+		loadAssets := archive.AssetsFile != "" && !app.OnlyDB
+		var assetsDir string
+
+		// Determine & validate the assets target before restoring anything,
+		// so an unsafe target fails before the database is replaced.
+		if loadAssets {
+			assetsDir, _ = cmd.Flags().GetString("assets-dir")
+			if assetsDir != "" {
+				// relative paths are relative to the webroot
+				if !filepath.IsAbs(assetsDir) {
+					assetsDir = filepath.Join(app.ProjectRoot, assetsDir)
+				}
+			} else {
+				if utils.IsDir(path.Join(app.ProjectRoot, "public")) {
+					assetsDir = path.Join(app.ProjectRoot, "public", "assets")
+				} else {
+					assetsDir = path.Join(app.ProjectRoot, "assets")
+				}
+			}
+
+			cwd, _ := os.Getwd()
+			if err := sspak.ValidateAssetsTarget(
+				assetsDir,
+				app.ProjectRoot,
+				filepath.Join(app.ProjectRoot, "public"),
+				args[0],
+				cwd,
+			); err != nil {
+				return err
+			}
+		}
+
 		if archive.DatabaseFile != "" && !app.OnlyAssets {
 			if err := app.BootstrapEnv(app.ProjectRoot); err != nil {
 				return err
@@ -48,15 +83,8 @@ var loadCmd = &cobra.Command{
 			}
 		}
 
-		if archive.AssetsFile != "" && !app.OnlyDB {
-			var assetsBase string
-			if utils.IsDir(path.Join(app.ProjectRoot, "public")) {
-				assetsBase = path.Join(app.ProjectRoot, "public")
-			} else {
-				assetsBase = app.ProjectRoot
-			}
-
-			if err := archive.LoadAssets(assetsBase); err != nil {
+		if loadAssets {
+			if err := archive.LoadAssets(assetsDir); err != nil {
 				return err
 			}
 		}
@@ -76,6 +104,9 @@ func init() {
 
 	loadCmd.Flags().
 		BoolVarP(&app.OnlyAssets, "assets", "", false, "only restore the assets")
+
+	loadCmd.Flags().
+		StringP("assets-dir", "", "", "restore assets to this directory, relative to <webroot> unless absolute (default: public/assets)")
 
 	loadCmd.Flags().
 		BoolVarP(&app.IgnoreResampled, "ignore-resampled", "i", false, "ignore most resampled images (experimental)")
