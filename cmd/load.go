@@ -106,7 +106,7 @@ func init() {
 		BoolVarP(&app.OnlyAssets, "assets", "", false, "only restore the assets")
 
 	loadCmd.Flags().
-		StringP("assets-dir", "", "", "restore assets to this directory, relative to <webroot> unless absolute (default: public/assets or assets)")
+		StringP("assets-dir", "", "", "restore assets to this directory, relative to <webroot> unless absolute (default: public/assets)")
 
 	loadCmd.Flags().
 		BoolVarP(&app.IgnoreResampled, "ignore-resampled", "i", false, "ignore most resampled images (experimental)")

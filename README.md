@@ -22,6 +22,7 @@ SSBak is a self-contained static binary written in Go, and does not use third-pa
 
 - Compatible with the standard `*.sspak` file format (non-executable tar files).
 - Create and restore database and/or assets regardless of size.
+- Optional custom assets directory for save & load (`--assets-dir`, see [custom assets directory](#custom-assets-directory)).
 - Optionally create or restore without resampled images (`--ignore-resampled`). Note: this skips most common image manipulations except for `ResizedImages` which are usually generated for HTMLText and cannot be regenerated "on the fly".
 - Optional zstd compression (rather than gzip) for faster compression/decompression speeds and better compression ratios (`-z` or `--zstd`). Note: this is not compatible with the legacy SSPak utility and will requires SSBak >= 1.3.0 to extract.
 - SSBak does not use PHP at all (see [limitations](#limitations)).
@@ -83,6 +84,15 @@ By default SSBak uses your system temporary directory (eg: `/tmp/` on Linux/Mac)
 
 ```
 TMPDIR="/drive/with/more/space" ssbak save . website.sspak
+```
+
+## Custom assets directory
+
+By default `ssbak save` looks for `assets` (or `public/assets`) in your webroot, and `ssbak load` restores to `public/assets` if a `public` directory exists, otherwise `assets`. If your assets live elsewhere, for example a shared directory that is symlinked or mounted into the site, use `--assets-dir` with both `save` and `load`. The path is relative to the webroot unless it is absolute:
+
+```
+ssbak save . website.sspak --assets-dir /path/to/shared/assets
+ssbak load website.sspak . --assets-dir /path/to/shared/assets
 ```
 
 ## Limitations
