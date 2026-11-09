@@ -90,7 +90,7 @@ func init() {
 		BoolVarP(&app.OnlyAssets, "assets", "", false, "only save the assets")
 
 	saveCmd.Flags().
-		StringP("assets-dir", "", "", "save assets from this directory, relative to <webroot> unless absolute (default: assets or public/assets)")
+		StringP("assets-dir", "", "", "save assets from this directory, relative to <webroot> unless absolute (default: public/assets)")
 
 	saveCmd.Flags().
 		BoolVarP(&app.IgnoreResampled, "ignore-resampled", "i", false, "ignore most resampled images")
