@@ -93,11 +93,18 @@ func extractAssetsFromReader(r io.Reader, isZSTD bool, directory string) (err er
 
 		fileInfo := header.FileInfo()
 
+		// Strip the archive's top-level directory (normally "assets/") so the
+		// contents are extracted directly into directory.
+		relPath, isTopLevel := assetRelPath(header.Name)
+		if relPath == "" || (isTopLevel && !fileInfo.IsDir()) {
+			continue
+		}
+
 		// Tar slip prevention (CWE-22): resolve the full path first, then
 		// verify it sits within the extraction directory. String-matching on
 		// header.Name alone misses absolute paths, mixed separators, and other
-		// bypass tricks — only the resolved path is trustworthy.
-		filename := filepath.Join(directory, filepath.FromSlash(header.Name))
+		// bypass tricks, so only the resolved path is trustworthy.
+		filename := filepath.Join(directory, filepath.FromSlash(relPath))
 		if !strings.HasPrefix(filename+string(os.PathSeparator), filepath.Clean(directory)+string(os.PathSeparator)) {
 			continue
 		}
@@ -152,6 +159,27 @@ func extractAssetsFromReader(r io.Reader, isZSTD bool, directory string) (err er
 	return nil
 }
 
+// assetRelPath strips the top-level directory from a tar entry name, returning
+// the path relative to the assets directory. Archives normally contain a single
+// top-level "assets" directory, however it may have a different name (eg: when
+// the assets directory was a symlink to a differently named directory when saved).
+// isTopLevel is true when the entry is the top-level entry itself, in which case
+// "." is returned. An empty string is returned for entries that should be ignored.
+func assetRelPath(name string) (relPath string, isTopLevel bool) {
+	// cleaning against "/" removes any "./" prefixes and "../" traversal
+	name = strings.TrimPrefix(path.Clean("/"+name), "/")
+	if name == "" {
+		return "", false
+	}
+
+	i := strings.IndexByte(name, '/')
+	if i == -1 {
+		return ".", true
+	}
+
+	return name[i+1:], false
+}
+
 // mkdirAll creates all directories and returns an undo function that removes
 // the first directory created, allowing cleanup on error.
 func mkdirAll(dirPath string, perm os.FileMode) (func(), error) {
@@ -201,41 +229,45 @@ func stripTrailingSlash(p string) string {
 	return p
 }
 
-// Read a directory and write it to the tar writer. Recursive function that writes all sub folders.
-func tarAddDirectory(directory string, tarWriter *tar.Writer, subPath string) error {
+// assetsArchiveRoot is the top-level directory name of every assets archive,
+// regardless of the name of the directory the assets were read from.
+const assetsArchiveRoot = "assets"
+
+// tarAddDirectory recursively writes directory and its contents to the tar writer,
+// storing them under archiveName (eg: "assets") in the archive. Symbolic links
+// are followed, so linked files & directories are stored as their contents.
+func tarAddDirectory(directory string, tarWriter *tar.Writer, archiveName string) error {
+	return tarAddDirectoryRecursive(directory, tarWriter, archiveName, map[string]bool{})
+}
+
+// tarAddDirectoryRecursive does the work for tarAddDirectory. visited contains the
+// resolved paths of the directories currently being walked, to prevent symlink loops.
+func tarAddDirectoryRecursive(directory string, tarWriter *tar.Writer, archiveName string, visited map[string]bool) error {
+	realDir, err := filepath.EvalSymlinks(directory)
+	if err != nil {
+		return err
+	}
+	if visited[realDir] {
+		app.Log(fmt.Sprintf("Skipping '%s': symbolic link loop", directory))
+		return nil
+	}
+	visited[realDir] = true
+	defer delete(visited, realDir)
+
 	base, err := os.Stat(directory)
 	if err != nil {
 		return err
 	}
 
-	if base.IsDir() {
-		// Add the directory header to tar so we can restore permissions etc
-		// calculate the relative path for tar
-		evalPath, err := filepath.EvalSymlinks(directory)
-		if err != nil {
-			return err
-		}
-		subPath, err := filepath.EvalSymlinks(subPath)
-		if err != nil {
-			return err
-		}
+	// Add the directory header to tar so we can restore permissions etc
+	header, err := tar.FileInfoHeader(base, "")
+	if err != nil {
+		return err
+	}
+	header.Name = archiveName + "/"
 
-		// relative path
-		relativeDirName := evalPath[len(subPath):]
-
-		// inherit directory permissions
-		header, err := tar.FileInfoHeader(base, base.Name())
-		if err != nil {
-			return err
-		}
-
-		// set relative directory path
-		header.Name = relativeDirName
-
-		// write directory header
-		if err := tarWriter.WriteHeader(header); err != nil {
-			return err
-		}
+	if err := tarWriter.WriteHeader(header); err != nil {
+		return err
 	}
 
 	files, err := os.ReadDir(directory)
@@ -245,29 +277,41 @@ func tarAddDirectory(directory string, tarWriter *tar.Writer, subPath string) er
 
 	for _, file := range files {
 		currentPath := filepath.Join(directory, file.Name())
-		if file.IsDir() {
-			// process contents of directory
-			if err := tarAddDirectory(currentPath, tarWriter, subPath); err != nil {
+		currentName := archiveName + "/" + file.Name()
+
+		// os.Stat follows symbolic links
+		fi, err := os.Stat(currentPath)
+		if err != nil {
+			return err
+		}
+
+		if fi.IsDir() {
+			if err := tarAddDirectoryRecursive(currentPath, tarWriter, currentName, visited); err != nil {
 				return err
 			}
-		} else {
-			fi, err := file.Info()
-			if err != nil {
-				return err
-			}
-			err = tarAddFile(currentPath, tarWriter, fi, subPath)
-			if err != nil {
-				return err
-			}
+			continue
+		}
+
+		if !fi.Mode().IsRegular() {
+			app.Log(fmt.Sprintf("Skipping '%s': not a regular file", currentPath))
+			continue
+		}
+
+		if err := tarAddFile(currentPath, tarWriter, fi, currentName); err != nil {
+			return err
 		}
 	}
 
 	return nil
 }
 
-// Write path without the prefix in subPath to tar writer.
-func tarAddFile(path string, tarWriter *tar.Writer, fileInfo os.FileInfo, subPath string) error {
-	file, err := os.Open(filepath.Clean(path))
+// tarAddFile writes the file at filePath to the tar writer as archiveName.
+func tarAddFile(filePath string, tarWriter *tar.Writer, fileInfo os.FileInfo, archiveName string) error {
+	if skipResampled(archiveName) {
+		return nil
+	}
+
+	file, err := os.Open(filepath.Clean(filePath))
 	if err != nil {
 		return err
 	}
@@ -278,40 +322,17 @@ func tarAddFile(path string, tarWriter *tar.Writer, fileInfo os.FileInfo, subPat
 		}
 	}()
 
-	evalPath, err := filepath.EvalSymlinks(path)
+	header, err := tar.FileInfoHeader(fileInfo, "")
 	if err != nil {
 		return err
 	}
+	header.Name = archiveName
 
-	subPath, err = filepath.EvalSymlinks(subPath)
-	if err != nil {
-		return err
-	}
-
-	link := ""
-	if evalPath != path {
-		link = evalPath
-	}
-
-	if skipResampled(path) {
-		return nil
-	}
-
-	header, err := tar.FileInfoHeader(fileInfo, link)
-	if err != nil {
-		return err
-	}
-	header.Name = evalPath[len(subPath):]
-
-	err = tarWriter.WriteHeader(header)
-	if err != nil {
+	if err := tarWriter.WriteHeader(header); err != nil {
 		return err
 	}
 
 	_, err = io.Copy(tarWriter, file)
-	if err != nil {
-		return err
-	}
 
 	return err
 }

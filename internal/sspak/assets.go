@@ -75,7 +75,8 @@ func (f *File) AddAssets(assetsDir string) error {
 		tarWriter = tar.NewWriter(gzipWriter)
 	}
 
-	err = tarAddDirectory(assetsDir, tarWriter, filepath.Dir(assetsDir))
+	// the archive's top-level directory is always "assets", regardless of the source directory name
+	err = tarAddDirectory(assetsDir, tarWriter, assetsArchiveRoot)
 	if err != nil {
 		tarWriter.Close()
 		if zstdWriter != nil {
@@ -117,23 +118,25 @@ func (f *File) AddAssets(assetsDir string) error {
 	return file.Close()
 }
 
-// LoadAssets extracts the assets archive from f.AssetsFile into assetsBase.
-// Any existing assets directory is renamed to assets.old and scheduled for cleanup.
+// LoadAssets extracts the assets archive from f.AssetsFile into assetsPath.
+// The archive's top-level directory (normally "assets") is stripped, so the
+// contents are extracted directly into assetsPath.
+// Any existing assetsPath directory is renamed to <assetsPath>.old and scheduled for cleanup.
 // It supports both tar.gz and tar.zst formats.
 // When f.SourceSSPak is set the archive entry is streamed directly without temp files.
-func (f *File) LoadAssets(assetsBase string) error {
-	if assetsBase == "" {
-		assetsBase = "."
+func (f *File) LoadAssets(assetsPath string) error {
+	if assetsPath == "" {
+		assetsPath = "assets"
 	}
+	assetsPath = filepath.Clean(assetsPath)
 
 	if f.SourceSSPak == "" {
 		inSize, _ := utils.CalcSize(f.AssetsFile)
-		if err := utils.HasEnoughSpace(assetsBase, inSize); err != nil {
+		if err := utils.HasEnoughSpace(existingParent(assetsPath), inSize); err != nil {
 			return err
 		}
 	}
 
-	assetsPath := filepath.Join(assetsBase, "assets")
 	if IsDir(assetsPath) {
 		app.Log(fmt.Sprintf("Renaming existing '%s' to '%s.old'", assetsPath, assetsPath))
 		if err := os.Rename(assetsPath, assetsPath+".old"); err != nil {
@@ -155,11 +158,11 @@ func (f *File) LoadAssets(assetsBase string) error {
 		}
 		defer cleanup()
 
-		if err := extractAssetsFromReader(r, strings.HasSuffix(f.AssetsFile, ".tar.zst"), assetsBase); err != nil {
+		if err := extractAssetsFromReader(r, strings.HasSuffix(f.AssetsFile, ".tar.zst"), assetsPath); err != nil {
 			return err
 		}
 	} else {
-		if err := extractAssets(f.AssetsFile, assetsBase); err != nil {
+		if err := extractAssets(f.AssetsFile, assetsPath); err != nil {
 			return err
 		}
 	}
@@ -168,6 +171,25 @@ func (f *File) LoadAssets(assetsBase string) error {
 	app.Log(fmt.Sprintf("Restored '%s' (%s)", assetsPath, utils.ByteToHr(outSize)))
 
 	return nil
+}
+
+// existingParent returns the closest existing directory of p (including p itself),
+// used for disk space checks when the target directory does not exist yet.
+func existingParent(p string) string {
+	p, err := filepath.Abs(p)
+	if err != nil {
+		return "."
+	}
+
+	for !IsDir(p) {
+		parent := filepath.Dir(p)
+		if parent == p {
+			break
+		}
+		p = parent
+	}
+
+	return p
 }
 
 // SkipResampled detects whether the assets is a resampled image

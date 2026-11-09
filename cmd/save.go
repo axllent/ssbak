@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"path"
+	"path/filepath"
 
 	"github.com/axllent/ssbak/app"
 	"github.com/axllent/ssbak/internal/sspak"
@@ -12,12 +14,13 @@ import (
 
 // saveCmd represents the save command
 var saveCmd = &cobra.Command{
-	Use:     "save <webroot> <sspak>",
-	Short:   "Create .sspak backup of database and/or assets",
-	Long:    `Create .sspak archive from a Silverstripe database and/or assets.`,
-	Example: `  ssbak save ./ website.sspak`,
-	Args:    cobra.ExactArgs(2),
-	RunE: func(_ *cobra.Command, args []string) error {
+	Use:   "save <webroot> <sspak>",
+	Short: "Create .sspak backup of database and/or assets",
+	Long:  `Create .sspak archive from a Silverstripe database and/or assets.`,
+	Example: `  ssbak save ./ website.sspak
+  ssbak save ./ website.sspak --assets-dir /path/to/shared/assets`,
+	Args: cobra.ExactArgs(2),
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if err := app.BootstrapEnv(args[0]); err != nil {
 			return err
 		}
@@ -43,7 +46,18 @@ var saveCmd = &cobra.Command{
 				err       error
 			)
 
-			if utils.IsDir(path.Join(app.ProjectRoot, "assets")) {
+			customAssetsDir, _ := cmd.Flags().GetString("assets-dir")
+
+			if customAssetsDir != "" {
+				// relative paths are relative to the webroot
+				if !filepath.IsAbs(customAssetsDir) {
+					customAssetsDir = filepath.Join(args[0], customAssetsDir)
+				}
+				if !utils.IsDir(customAssetsDir) {
+					return fmt.Errorf("assets directory '%s' does not exist", customAssetsDir)
+				}
+				assetsDir = customAssetsDir
+			} else if utils.IsDir(path.Join(app.ProjectRoot, "assets")) {
 				assetsDir, err = app.RealPath(path.Join(app.ProjectRoot, "assets"))
 				if err != nil {
 					return err
@@ -74,6 +88,9 @@ func init() {
 
 	saveCmd.Flags().
 		BoolVarP(&app.OnlyAssets, "assets", "", false, "only save the assets")
+
+	saveCmd.Flags().
+		StringP("assets-dir", "", "", "save assets from this directory, relative to <webroot> unless absolute (default: assets or public/assets)")
 
 	saveCmd.Flags().
 		BoolVarP(&app.IgnoreResampled, "ignore-resampled", "i", false, "ignore most resampled images")
