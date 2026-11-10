@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.3]
+
+- Allow `--db=false` / `--assets=false` and skip `.env` for assets-only save & load (#43)
+
 ## [1.3.2]
 
 - Add option to define custom assets directory for save & load (#42)

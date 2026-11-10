@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -26,8 +25,8 @@ var loadCmd = &cobra.Command{
 			return fmt.Errorf("'%s' does not exist", args[0])
 		}
 
-		if app.OnlyAssets && app.OnlyDB {
-			return errors.New("you cannot use --assets and --db flags together")
+		if err := resolveOnlyFlags(cmd); err != nil {
+			return err
 		}
 
 		app.ProjectRoot = "."
@@ -100,10 +99,10 @@ func init() {
 		BoolP("drop-db", "", false, "drop existing database (if exists)")
 
 	loadCmd.Flags().
-		BoolVarP(&app.OnlyDB, "db", "", false, "only restore the database")
+		BoolVarP(&app.OnlyDB, "db", "", false, "only restore the database, not the assets")
 
 	loadCmd.Flags().
-		BoolVarP(&app.OnlyAssets, "assets", "", false, "only restore the assets")
+		BoolVarP(&app.OnlyAssets, "assets", "", false, "only restore the assets, not the database")
 
 	loadCmd.Flags().
 		StringP("assets-dir", "", "", "restore assets to this directory, relative to <webroot> unless absolute (default: public/assets)")
