@@ -21,12 +21,22 @@ var saveCmd = &cobra.Command{
   ssbak save ./ website.sspak --assets-dir /path/to/shared/assets`,
 	Args: cobra.ExactArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if err := app.BootstrapEnv(args[0]); err != nil {
+		if err := resolveOnlyFlags(cmd); err != nil {
 			return err
 		}
 
-		if app.OnlyAssets && app.OnlyDB {
-			return errors.New("you cannot use --assets and --db flags together")
+		if app.OnlyAssets {
+			// the environment (.env) is only required for the database
+			if !utils.IsDir(args[0]) {
+				return fmt.Errorf("%s is not a directory", args[0])
+			}
+			root, err := filepath.Abs(args[0])
+			if err != nil {
+				return err
+			}
+			app.ProjectRoot = root
+		} else if err := app.BootstrapEnv(args[0]); err != nil {
+			return err
 		}
 
 		archive, err := sspak.New()
@@ -84,10 +94,10 @@ func init() {
 	rootCmd.AddCommand(saveCmd)
 
 	saveCmd.Flags().
-		BoolVarP(&app.OnlyDB, "db", "", false, "only save the database")
+		BoolVarP(&app.OnlyDB, "db", "", false, "only save the database, not the assets")
 
 	saveCmd.Flags().
-		BoolVarP(&app.OnlyAssets, "assets", "", false, "only save the assets")
+		BoolVarP(&app.OnlyAssets, "assets", "", false, "only save the assets, not the database")
 
 	saveCmd.Flags().
 		StringP("assets-dir", "", "", "save assets from this directory, relative to <webroot> unless absolute (default: public/assets)")

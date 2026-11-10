@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"errors"
-
 	"github.com/axllent/ssbak/app"
 	"github.com/axllent/ssbak/internal/sspak"
 	"github.com/axllent/ssbak/internal/utils"
@@ -15,14 +13,14 @@ var extractCmd = &cobra.Command{
 	Short: "Extract .sspak backup",
 	Long:  `Extract the contents of an .sspak backup.`,
 	Args:  cobra.RangeArgs(1, 2),
-	RunE: func(_ *cobra.Command, args []string) error {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		outputDir := "."
 		if len(args) == 2 {
 			outputDir = args[1]
 		}
 
-		if app.OnlyAssets && app.OnlyDB {
-			return errors.New("you cannot use --assets and --db flags together")
+		if err := resolveOnlyFlags(cmd); err != nil {
+			return err
 		}
 
 		if err := utils.MkDirIfNotExists(outputDir); err != nil {
@@ -37,10 +35,10 @@ func init() {
 	rootCmd.AddCommand(extractCmd)
 
 	extractCmd.Flags().
-		BoolVarP(&app.OnlyDB, "db", "", false, "only extract the database.sql.gz file")
+		BoolVarP(&app.OnlyDB, "db", "", false, "only extract the database archive file, not the assets")
 
 	extractCmd.Flags().
-		BoolVarP(&app.OnlyAssets, "assets", "", false, "only extract the assets.tar.gz file")
+		BoolVarP(&app.OnlyAssets, "assets", "", false, "only extract the assets archive file, not the database")
 
 	extractCmd.Flags().
 		BoolVarP(&app.Verbose, "verbose", "v", false, "verbose output")
